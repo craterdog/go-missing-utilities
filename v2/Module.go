@@ -32,12 +32,17 @@ string.
 */
 func MakeAllCaps(mixedCase string) string {
 	var allCaps sts.Builder
+	var foundLower bool
 	for _, r := range mixedCase {
 		switch {
 		case uni.IsLower(r):
+			foundLower = true
 			allCaps.WriteRune(uni.ToUpper(r))
 		case uni.IsUpper(r):
-			allCaps.WriteString("_")
+			if foundLower {
+				allCaps.WriteString("_")
+				foundLower = false
+			}
 			allCaps.WriteRune(r)
 		default:
 			allCaps.WriteRune(r)
@@ -118,28 +123,29 @@ ReplaceAll replaces each instance of the specified name embedded in angle
 brackets (i.e. "<" and ">") with the specified value throughout the specified
 template string.  The way the name is shown in the brackets determines what
 transformations are done on the value prior to the substitution as follows:
-  - <mixedCaseName_> -> mixedCaseValue[_]
-  - <lowerCaseName> -> lowerCaseValue
-  - <snake-case-name> -> snake-case-value
-  - <UpperCaseName> -> UpperCaseValue
-  - <ALL_CAPS_NAME> -> ALL_CAPS_VALUE
+  - <anyCaseName>     -> value              {leave value as is}
+  - <lowerCaseName_>  -> lowerCaseValue[_]  {convert value to lower case and ensure uniqueness}
+  - <snake-case-name> -> snake-case-value   {convert value to snake case}
+  - <UpperCaseName_>  -> UpperCaseValue     {convert value to upper case}
+  - <ALL_CAPS_NAME>   -> ALL_CAPS_VALUE     {convert value to all caps with underscores}
 */
 func ReplaceAll(template string, name string, value string) string {
-	// <mixedCaseName_> -> mixedCaseValue[_]
-	var mixedCaseName = MakeLowerCase(name) + "_"
-	var mixedCaseValue = MakeLowerCase(value)
-	switch mixedCaseValue {
+	// <anyCaseName> -> value
+	var anyCaseName = MakeLowerCase(name)
+	template = sts.ReplaceAll(template, "<"+anyCaseName+">", value)
+	anyCaseName = MakeUpperCase(name)
+	template = sts.ReplaceAll(template, "<"+anyCaseName+">", value)
+
+	// <lowerCaseName_> -> lowerCaseValue[_]
+	var lowerCaseName = MakeLowerCase(name) + "_"
+	var lowerCaseValue = MakeLowerCase(value)
+	switch lowerCaseValue {
 	// Check to see if the value is a reserved word.
 	case "any", "byte", "case", "complex", "copy", "default", "error",
 		"false", "import", "interface", "map", "nil", "package", "range",
 		"real", "return", "rune", "string", "switch", "true", "type":
-		mixedCaseValue += "_"
+		lowerCaseValue += "_"
 	}
-	template = sts.ReplaceAll(template, "<"+mixedCaseName+">", mixedCaseValue)
-
-	// <lowerCaseName> -> lowerCaseValue
-	var lowerCaseName = MakeLowerCase(name)
-	var lowerCaseValue = MakeLowerCase(value)
 	template = sts.ReplaceAll(template, "<"+lowerCaseName+">", lowerCaseValue)
 
 	// <snake-case-name> -> snake-case-value
@@ -147,8 +153,8 @@ func ReplaceAll(template string, name string, value string) string {
 	var snakeCaseValue = MakeSnakeCase(value)
 	template = sts.ReplaceAll(template, "<"+snakeCaseName+">", snakeCaseValue)
 
-	// <UpperCaseName> -> UpperCaseValue
-	var upperCaseName = MakeUpperCase(name)
+	// <UpperCaseName_> -> UpperCaseValue
+	var upperCaseName = MakeUpperCase(name) + "_"
 	var upperCaseValue = MakeUpperCase(value)
 	template = sts.ReplaceAll(template, "<"+upperCaseName+">", upperCaseValue)
 

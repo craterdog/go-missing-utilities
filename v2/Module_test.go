@@ -18,6 +18,33 @@ import (
 	tes "testing"
 )
 
+const template = `
+	<mixedName>
+	<MixedName>
+	<mixedName_>
+	<mixed-name>
+	<MixedName_>
+	<MIXED_NAME>
+`
+
+const expected = `
+	mixedValue
+	mixedValue
+	mixedValue
+	mixed-value
+	MixedValue
+	MIXED_VALUE
+`
+
+const reserved = `
+	string
+	string
+	string_
+	string
+	String
+	STRING
+`
+
 func TestStringManipulation(t *tes.T) {
 	var mixedCase = "helloWorld"
 	var lowerCase = mod.MakeLowerCase(mixedCase)
@@ -35,6 +62,22 @@ func TestStringManipulation(t *tes.T) {
 	var plural = mod.MakePlural(mixedCase)
 	ass.Equal(t, "helloWorlds", plural)
 
+	mixedCase = "HelloWorld"
+	lowerCase = mod.MakeLowerCase(mixedCase)
+	ass.Equal(t, "helloWorld", lowerCase)
+
+	snakeCase = mod.MakeSnakeCase(mixedCase)
+	ass.Equal(t, "hello-world", snakeCase)
+
+	upperCase = mod.MakeUpperCase(mixedCase)
+	ass.Equal(t, "HelloWorld", upperCase)
+
+	allCaps = mod.MakeAllCaps(mixedCase)
+	ass.Equal(t, "HELLO_WORLD", allCaps)
+
+	plural = mod.MakePlural(mixedCase)
+	ass.Equal(t, "HelloWorlds", plural)
+
 	var singular = "mess"
 	plural = mod.MakePlural(singular)
 	ass.Equal(t, "messes", plural)
@@ -42,6 +85,12 @@ func TestStringManipulation(t *tes.T) {
 	plural = "pixies"
 	var unchanged = mod.MakePlural(plural)
 	ass.Equal(t, plural, unchanged)
+
+	var actual = mod.ReplaceAll(template, "mixedName", "mixedValue")
+	ass.Equal(t, expected, actual)
+
+	actual = mod.ReplaceAll(template, "MixedName", "string")
+	ass.Equal(t, reserved, actual)
 }
 
 type Interface interface {
