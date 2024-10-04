@@ -123,11 +123,12 @@ ReplaceAll replaces each instance of the specified name embedded in angle
 brackets (i.e. "<" and ">") with the specified value throughout the specified
 template string.  The way the name is shown in the brackets determines what
 transformations are done on the value prior to the substitution as follows:
-  - <anyCaseName>     -> value              {leave value as is}
-  - <lowerCaseName_>  -> lowerCaseValue[_]  {convert value to lower case and ensure uniqueness}
-  - <snake-case-name> -> snake-case-value   {convert value to snake case}
-  - <UpperCaseName_>  -> UpperCaseValue     {convert value to upper case}
-  - <ALL_CAPS_NAME>   -> ALL_CAPS_VALUE     {convert value to all caps with underscores}
+  - <anyCaseName>      -> value              {leave value as is}
+  - <lowerCaseName_>   -> lowerCaseValue[_]  {convert value to [unambiguous] lower case}
+  - <~lowerCaseName>   -> lowerCaseValue     {convert value to lower case}
+  - <~snake-case-name> -> snake-case-value   {convert value to snake case}
+  - <~UpperCaseName>   -> UpperCaseValue     {convert value to upper case}
+  - <~ALL_CAPS_NAME>   -> ALL_CAPS_VALUE     {convert value to all caps with underscores}
 */
 func ReplaceAll(template string, name string, value string) string {
 	// <anyCaseName> -> value
@@ -140,26 +141,37 @@ func ReplaceAll(template string, name string, value string) string {
 	var lowerCaseName = MakeLowerCase(name) + "_"
 	var lowerCaseValue = MakeLowerCase(value)
 	switch lowerCaseValue {
-	// Check to see if the value is a reserved word.
-	case "any", "byte", "case", "complex", "copy", "default", "error",
-		"false", "import", "interface", "map", "nil", "package", "range",
-		"real", "return", "rune", "string", "switch", "true", "type":
+	// Check to see if the value is a Go reserved word.
+	case "any", "append", "bool", "break", "byte", "cap", "case",
+		"chan", "clear", "close", "comparable", "complex", "const",
+		"continue", "copy", "default", "defer", "delete", "else",
+		"error", "fallthrough", "false", "for", "func", "go", "goto",
+		"if", "imag", "import", "int", "interface", "iota", "len",
+		"make", "map", "max", "min", "new", "nil", "package", "panic",
+		"print", "println", "range", "real", "recover", "return",
+		"rune", "select", "string", "struct", "switch", "true", "type",
+		"uint", "uintptr", "var":
 		lowerCaseValue += "_"
 	}
 	template = sts.ReplaceAll(template, "<"+lowerCaseName+">", lowerCaseValue)
 
-	// <snake-case-name> -> snake-case-value
-	var snakeCaseName = MakeSnakeCase(name)
+	// <~lowerCaseName> -> lowerCaseValue
+	lowerCaseName = "~" + MakeLowerCase(name)
+	lowerCaseValue = MakeLowerCase(value)
+	template = sts.ReplaceAll(template, "<"+lowerCaseName+">", lowerCaseValue)
+
+	// <~snake-case-name> -> snake-case-value
+	var snakeCaseName = "~" + MakeSnakeCase(name)
 	var snakeCaseValue = MakeSnakeCase(value)
 	template = sts.ReplaceAll(template, "<"+snakeCaseName+">", snakeCaseValue)
 
-	// <UpperCaseName_> -> UpperCaseValue
-	var upperCaseName = MakeUpperCase(name) + "_"
+	// <~UpperCaseName> -> UpperCaseValue
+	var upperCaseName = "~" + MakeUpperCase(name)
 	var upperCaseValue = MakeUpperCase(value)
 	template = sts.ReplaceAll(template, "<"+upperCaseName+">", upperCaseValue)
 
-	// <ALL_CAPS_NAME> -> ALL_CAPS_VALUE
-	var allCapsName = MakeAllCaps(name)
+	// <~ALL_CAPS_NAME> -> ALL_CAPS_VALUE
+	var allCapsName = "~" + MakeAllCaps(name)
 	var allCapsValue = MakeAllCaps(value)
 	template = sts.ReplaceAll(template, "<"+allCapsName+">", allCapsValue)
 

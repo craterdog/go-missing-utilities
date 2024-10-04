@@ -20,11 +20,12 @@ import (
 
 const template = `
 	<mixedName>
-	<MixedName>
 	<mixedName_>
-	<mixed-name>
-	<MixedName_>
-	<MIXED_NAME>
+	<~mixedName>
+	<~mixed-name>
+	<MixedName>
+	<~MixedName>
+	<~MIXED_NAME>
 `
 
 const expected = `
@@ -32,14 +33,16 @@ const expected = `
 	mixedValue
 	mixedValue
 	mixed-value
+	mixedValue
 	MixedValue
 	MIXED_VALUE
 `
 
 const reserved = `
 	string
-	string
 	string_
+	string
+	string
 	string
 	String
 	STRING
