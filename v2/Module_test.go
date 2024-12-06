@@ -154,6 +154,9 @@ func TestObjectReflection(t *tes.T) {
 	ass.True(t, uti.IsUndefined(nilPointer))
 	ass.False(t, uti.IsDefined(nilPointer))
 
+	ass.True(t, uti.IsUndefined(nil))
+	ass.False(t, uti.IsDefined(nil))
+
 	var pointer Interface = &Class{}
 	ass.False(t, uti.IsUndefined(pointer))
 	ass.True(t, uti.IsDefined(pointer))

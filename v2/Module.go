@@ -16,12 +16,81 @@ Package "module" defines the global functions provided by this module.
 package module
 
 import (
+	osx "os"
 	ref "reflect"
 	sts "strings"
 	uni "unicode"
 )
 
 // GLOBAL FUNCTIONS
+
+// File System
+
+func PathExists(
+	path string,
+) bool {
+	var _, err = osx.Stat(path)
+	if err == nil {
+		return true
+	}
+	if osx.IsNotExist(err) {
+		return false
+	}
+	panic(err)
+}
+
+func RemovePath(
+	path string,
+) {
+	var err = osx.RemoveAll(path)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func MakeDirectory(
+	directory string,
+) {
+	var err = osx.MkdirAll(directory, 0755)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func RemakeDirectory(
+	directory string,
+) {
+	var err = osx.RemoveAll(directory)
+	if err != nil {
+		panic(err)
+	}
+	err = osx.MkdirAll(directory, 0755)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func ReadFile(
+	filename string,
+) string {
+	var bytes, err = osx.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	var source = string(bytes)
+	return source
+}
+
+func WriteFile(
+	filename string,
+	source string,
+) {
+	var bytes = []byte(source)
+	var err = osx.WriteFile(filename, bytes, 0644)
+	if err != nil {
+		panic(err)
+	}
+}
 
 // String Manipulation
 
@@ -208,20 +277,23 @@ func IsDefined(
 	// pointers and various intrinsic types differently.  This makes consistent
 	// checking across different types problematic.  We handle it here in one
 	// place (hopefully correctly).
-	switch actual := value.(type) {
-	case string:
-		return len(actual) > 0
-	default:
-		var meta = ref.ValueOf(actual)
-		var isPointer = meta.Kind() == ref.Ptr ||
-			meta.Kind() == ref.Interface ||
-			meta.Kind() == ref.Slice ||
-			meta.Kind() == ref.Map ||
-			meta.Kind() == ref.Chan ||
-			meta.Kind() == ref.Func
-		var isNil = isPointer && meta.IsNil()
-		return !isNil && meta.IsValid()
+	var isDefined bool
+	if value != nil {
+		switch actual := value.(type) {
+		case string:
+			return len(actual) > 0
+		default:
+			var isPointer bool
+			var meta = ref.ValueOf(actual)
+			switch meta.Kind() {
+			case ref.Ptr, ref.Interface, ref.Slice, ref.Map, ref.Chan, ref.Func:
+				isPointer = true
+			}
+			var isNil = isPointer && meta.IsNil()
+			isDefined = !isNil && meta.IsValid()
+		}
 	}
+	return isDefined
 }
 
 /*
