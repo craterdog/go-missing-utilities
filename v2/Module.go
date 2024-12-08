@@ -24,8 +24,12 @@ import (
 
 // GLOBAL FUNCTIONS
 
-// File System
+// Filesystem
 
+/*
+PathExists checks whether or not the specified filesystem path is defined.  An
+empty string or a nil pointer is considered to be undefined.
+*/
 func PathExists(
 	path string,
 ) bool {
@@ -39,6 +43,10 @@ func PathExists(
 	panic(err)
 }
 
+/*
+RemovePath recursively removes all directories and files found in the specified
+filesystem path.
+*/
 func RemovePath(
 	path string,
 ) {
@@ -48,6 +56,10 @@ func RemovePath(
 	}
 }
 
+/*
+MakeDirectory creates all directories in the specified filesystem directory
+path.
+*/
 func MakeDirectory(
 	directory string,
 ) {
@@ -57,6 +69,10 @@ func MakeDirectory(
 	}
 }
 
+/*
+RemakeDirectory recursively removes all files and subdirectories from the
+specified filesystem directory path.
+*/
 func RemakeDirectory(
 	directory string,
 ) {
@@ -70,6 +86,10 @@ func RemakeDirectory(
 	}
 }
 
+/*
+ReadFile returns the contents of the specified file from the filesystem as a
+string.
+*/
 func ReadFile(
 	filename string,
 ) string {
@@ -81,6 +101,10 @@ func ReadFile(
 	return source
 }
 
+/*
+WriteFile writes the specified source string as the contents of the specified
+file in the filesystem.
+*/
 func WriteFile(
 	filename string,
 	source string,
@@ -92,14 +116,50 @@ func WriteFile(
 	}
 }
 
-// String Manipulation
+// Arrays
+
+/*
+CopyArray[V any] returns a copy of the specified array with the same size and
+elements as the specified array.
+*/
+func CopyArray[V any](
+	array []V,
+) []V {
+	var size = len(array)
+	var duplicate = make([]V, size)
+	copy(duplicate, array)
+	return duplicate
+}
+
+/*
+ArraysAreEqual[V comparable] determines whether or not the specified arrays have the
+same elements.
+*/
+func ArraysAreEqual[V comparable](
+	first []V,
+	second []V,
+) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for index, value := range first {
+		if value != second[index] {
+			return false
+		}
+	}
+	return true
+}
+
+// Strings
 
 /*
 MakeAllCaps modifies the specified mixed case string into a corresponding all
 uppercase string using "_"s to separate the words found in the mixed case
 string.
 */
-func MakeAllCaps(mixedCase string) string {
+func MakeAllCaps(
+	mixedCase string,
+) string {
 	var allCaps sts.Builder
 	var foundLower bool
 	for _, r := range mixedCase {
@@ -124,7 +184,9 @@ func MakeAllCaps(mixedCase string) string {
 MakeLowerCase modifies the specified mixed case string into a corresponding
 string starting with a lowercase letter.  All other letters remain unchanged.
 */
-func MakeLowerCase(mixedCase string) string {
+func MakeLowerCase(
+	mixedCase string,
+) string {
 	var lowerCase string
 	if len(mixedCase) > 0 {
 		runes := []rune(mixedCase)
@@ -138,7 +200,9 @@ func MakeLowerCase(mixedCase string) string {
 MakePlural attempts to modify the specified mixed case string to make it
 plural.  It does not use much intelligence to attempt this.
 */
-func MakePlural(mixedCase string) string {
+func MakePlural(
+	mixedCase string,
+) string {
 	var plural string
 	switch {
 	case sts.HasSuffix(mixedCase, "es"):
@@ -156,7 +220,9 @@ MakeSnakeCase modifies the specified mixed case string into a corresponding all
 lowercase string using "-"s to separate the words found in the mixed case
 string.
 */
-func MakeSnakeCase(mixedCase string) string {
+func MakeSnakeCase(
+	mixedCase string,
+) string {
 	mixedCase = MakeLowerCase(mixedCase)
 	var snakeCase sts.Builder
 	for _, r := range mixedCase {
@@ -177,7 +243,9 @@ func MakeSnakeCase(mixedCase string) string {
 MakeUpperCase modifies the specified mixed case string into a corresponding
 string starting with an uppercase letter.  All other letters remain unchanged.
 */
-func MakeUpperCase(mixedCase string) string {
+func MakeUpperCase(
+	mixedCase string,
+) string {
 	var upperCase string
 	if len(mixedCase) > 0 {
 		runes := []rune(mixedCase)
@@ -199,7 +267,11 @@ transformations are done on the value prior to the substitution as follows:
   - <~UpperCaseName>   -> UpperCaseValue     {convert value to upper case}
   - <~ALL_CAPS_NAME>   -> ALL_CAPS_VALUE     {convert value to all caps with underscores}
 */
-func ReplaceAll(template string, name string, value string) string {
+func ReplaceAll(
+	template string,
+	name string,
+	value string,
+) string {
 	// <anyCaseName> -> value
 	var anyCaseName = MakeLowerCase(name)
 	template = sts.ReplaceAll(template, "<"+anyCaseName+">", value)
@@ -247,7 +319,7 @@ func ReplaceAll(template string, name string, value string) string {
 	return template
 }
 
-// Object Reflection
+// Reflection
 
 /*
 ImplementsType checks whether or not the specified value implements the expected

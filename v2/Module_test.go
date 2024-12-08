@@ -18,6 +18,14 @@ import (
 	tes "testing"
 )
 
+func TestArrays(t *tes.T) {
+	var first = []int{1, 2, 3}
+	var second = uti.CopyArray(first)
+	ass.True(t, uti.ArraysAreEqual(first, second))
+	first[1] = 5
+	ass.False(t, uti.ArraysAreEqual(first, second))
+}
+
 const template = `
 	<mixedName>
 	<mixedName_>
@@ -106,7 +114,7 @@ type Class struct {
 func (v *Class) DoNothing() {
 }
 
-func TestObjectReflection(t *tes.T) {
+func TestReflection(t *tes.T) {
 	var emptyString string
 	ass.True(t, uti.IsUndefined(emptyString))
 	ass.False(t, uti.IsDefined(emptyString))
