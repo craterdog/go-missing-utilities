@@ -132,8 +132,8 @@ func CopyArray[V any](
 }
 
 /*
-ArraysAreEqual[V comparable] determines whether or not the specified arrays have the
-same elements.
+ArraysAreEqual[V comparable] determines whether or not the specified arrays have
+the same elements.
 */
 func ArraysAreEqual[V comparable](
 	first []V,
@@ -144,6 +144,41 @@ func ArraysAreEqual[V comparable](
 	}
 	for index, value := range first {
 		if value != second[index] {
+			return false
+		}
+	}
+	return true
+}
+
+// Maps
+
+/*
+CopyMap[K comparable, V any] returns a copy of the specified map with the same
+size and key-value pairs as the specified map.
+*/
+func CopyMap[K comparable, V any](
+	map_ map[K]V,
+) map[K]V {
+	var duplicate = make(map[K]V)
+	for key, value := range map_ {
+		duplicate[key] = value
+	}
+	return duplicate
+}
+
+/*
+MapsAreEqual[K comparable, V comparable] determines whether or not the specified
+maps have the same key-value pairs.
+*/
+func MapsAreEqual[K comparable, V comparable](
+	first map[K]V,
+	second map[K]V,
+) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	for key, value := range first {
+		if second[key] != value {
 			return false
 		}
 	}

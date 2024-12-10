@@ -21,9 +21,29 @@ import (
 func TestArrays(t *tes.T) {
 	var first = []int{1, 2, 3}
 	var second = uti.CopyArray(first)
+	ass.True(t, uti.ArraysAreEqual(first, first))
 	ass.True(t, uti.ArraysAreEqual(first, second))
+	ass.True(t, uti.ArraysAreEqual(second, first))
 	first[1] = 5
 	ass.False(t, uti.ArraysAreEqual(first, second))
+	ass.False(t, uti.ArraysAreEqual(second, first))
+}
+
+func TestMaps(t *tes.T) {
+	var first = map[string]int{
+		"one":   1,
+		"two":   2,
+		"three": 3,
+	}
+	var second = uti.CopyMap(first)
+	ass.True(t, uti.MapsAreEqual(first, first))
+	ass.True(t, uti.MapsAreEqual(first, second))
+	ass.True(t, uti.MapsAreEqual(second, first))
+	first["two"] = 5
+	ass.False(t, uti.MapsAreEqual(first, second))
+	second = uti.CopyMap(first)
+	second["four"] = 4
+	ass.False(t, uti.MapsAreEqual(first, second))
 }
 
 const template = `
