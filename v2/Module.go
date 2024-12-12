@@ -453,10 +453,10 @@ func formatArray(
 	switch {
 	case size == 0:
 		// This is an empty array.
-		result = " "
+		result += " "
 	case size == 1:
 		var value = reflected.Index(0).Interface()
-		result = formatValue(value, depth)
+		result += formatValue(value, depth)
 	default:
 		// This is a multiline sequence of values.
 		depth++
@@ -482,7 +482,7 @@ func formatMap(
 	switch {
 	case size == 0:
 		// This is an empty map.
-		result = ":"
+		result += ":"
 	default:
 		// This is a multiline sequence of associations.
 		depth++
