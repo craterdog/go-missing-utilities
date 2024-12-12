@@ -19,6 +19,60 @@ import (
 	tes "testing"
 )
 
+type Foolish interface {
+	GetFoo() int
+	GetBar() string
+	GetNil() Foolish
+}
+
+func FooBar(foo int, bar string, baz Foolish) Foolish {
+	return &foobar{foo, bar, baz}
+}
+
+type foobar struct {
+	foo int
+	bar string
+	Baz Foolish
+}
+
+func (v *foobar) GetFoo() int     { return v.foo }
+func (v foobar) GetFoo2() int     { return v.foo }
+func (v *foobar) GetBar() string  { return v.bar }
+func (v foobar) GetBar2() string  { return v.bar }
+func (v *foobar) GetNil() Foolish { return nil }
+func (v foobar) GetNil2() Foolish { return nil }
+
+func TestImplementsType(t *tes.T) {
+	var aspect Foolish
+	var value any
+	ass.False(t, uti.ImplementsType(value, (*Foolish)(nil)))
+	value = "foolish"
+	ass.False(t, uti.ImplementsType(value, (*Foolish)(nil)))
+	value = FooBar(5, "five", aspect)
+	ass.True(t, uti.ImplementsType(value, (*Foolish)(nil)))
+}
+
+func TestIsDefined(t *tes.T) {
+	var integer int
+	ass.True(t, uti.IsDefined(integer))
+	integer = 5
+	ass.True(t, uti.IsDefined(integer))
+
+	var name string
+	ass.False(t, uti.IsDefined(name))
+	name = ""
+	ass.False(t, uti.IsDefined(name))
+	name = "foobar"
+	ass.True(t, uti.IsDefined(name))
+
+	var slice []int
+	ass.False(t, uti.IsDefined(slice))
+	slice = []int{}
+	ass.True(t, uti.IsDefined(slice))
+	slice = []int{1, 2, 3}
+	ass.True(t, uti.IsDefined(slice))
+}
+
 func TestPrimitives(t *tes.T) {
 	fmt.Println("Primitives")
 	fmt.Println(uti.Format(false))
