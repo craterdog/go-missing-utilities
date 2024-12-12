@@ -18,6 +18,7 @@ package module
 import (
 	osx "os"
 	ref "reflect"
+	stc "strconv"
 	sts "strings"
 	uni "unicode"
 )
@@ -352,6 +353,220 @@ func ReplaceAll(
 	template = sts.ReplaceAll(template, "<"+allCapsName+">", allCapsValue)
 
 	return template
+}
+
+func Format(
+	value any,
+) string {
+	return formatValue(value, 0)
+}
+
+func formatValue(
+	value any,
+	depth uint,
+) string {
+	if value == nil {
+		return "<nil>"
+	}
+	switch actual := value.(type) {
+	case nil:
+		return "<nil>"
+
+	case bool:
+		return stc.FormatBool(actual)
+
+	case uint:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint8:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint16:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint32:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint64:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uintptr:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+
+	case int:
+		return stc.FormatInt(int64(actual), 10)
+	case int8:
+		return stc.FormatInt(int64(actual), 10)
+	case int16:
+		return stc.FormatInt(int64(actual), 10)
+	case int64:
+		return stc.FormatInt(int64(actual), 10)
+
+	case float32:
+		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
+		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
+			result += ".0"
+		}
+		return result
+	case float64:
+		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
+		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
+			result += ".0"
+		}
+		return result
+
+	case complex64:
+		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
+	case complex128:
+		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
+
+	case rune:
+		return stc.QuoteRune(actual)
+
+	case string:
+		return stc.Quote(actual)
+
+	default:
+		// The value is either a sequence of values or a pointer to something.
+		var reflected = ref.ValueOf(actual)
+		switch reflected.Kind() {
+		case ref.Array, ref.Slice:
+			return formatArray(actual, depth)
+
+		case ref.Map:
+			return formatMap(actual, depth)
+
+		case ref.Struct:
+			return formatStructure(actual, depth)
+
+		case ref.Interface, ref.Pointer:
+			return formatPointer(actual, depth)
+
+		default:
+			return ref.TypeOf(actual).String()
+		}
+	}
+}
+
+func formatArray(
+	array any,
+	depth uint,
+) string {
+	var result = "["
+	var reflected = ref.ValueOf(array)
+	var size = reflected.Len()
+	switch {
+	case size == 0:
+		// This is an empty array.
+		result = " "
+	case size == 1:
+		var value = reflected.Index(0).Interface()
+		result = formatValue(value, depth)
+	default:
+		// This is a multiline sequence of values.
+		depth++
+		for index := 0; index < size; index++ {
+			result += formatNewline(depth)
+			var value = reflected.Index(index).Interface()
+			result += formatValue(value, depth)
+		}
+		depth--
+		result += formatNewline(depth)
+	}
+	result += "]"
+	return result
+}
+
+func formatMap(
+	map_ any,
+	depth uint,
+) string {
+	var result = "["
+	var reflected = ref.ValueOf(map_)
+	var size = reflected.Len()
+	switch {
+	case size == 0:
+		// This is an empty map.
+		result = ":"
+	default:
+		// This is a multiline sequence of associations.
+		depth++
+		var association = reflected.MapRange()
+		for association.Next() {
+			result += formatNewline(depth)
+			var key = association.Key().Interface()
+			var value = association.Value().Interface()
+			result += formatValue(key, depth)
+			result += ": "
+			result += formatValue(value, depth)
+		}
+		depth--
+		result += formatNewline(depth)
+	}
+	result += "]"
+	return result
+}
+
+func formatNewline(
+	depth uint,
+) string {
+	var result = "\n"
+	var indentation = "    "
+	var level uint
+	for level < depth {
+		result += indentation
+		level++
+	}
+	return result
+}
+
+func formatPointer(
+	pointer any,
+	depth uint,
+) string {
+	var result string
+	var reflected = ref.ValueOf(pointer)
+	switch {
+	case reflected.MethodByName("AsMap").IsValid():
+		var map_ = reflected.MethodByName("AsMap").Call(
+			[]ref.Value{},
+		)[0].Interface()
+		result = formatMap(map_, depth)
+		var name = reflected.Type().Name()
+		if IsDefined(name) {
+			result += "(" + name + ")"
+		}
+	case reflected.MethodByName("AsArray").IsValid():
+		var array = reflected.MethodByName("AsArray").Call(
+			[]ref.Value{},
+		)[0].Interface()
+		result = formatArray(array, depth)
+		var name = reflected.Type().String()
+		if IsDefined(name) {
+			result += "(" + name + ")"
+		}
+	default:
+		var name = reflected.Type().String()
+		result = name
+	}
+	return result
+}
+
+func formatStructure(
+	structure any,
+	depth uint,
+) string {
+	var result = "["
+	depth++
+	var reflected = ref.ValueOf(structure)
+	var size = reflected.Len()
+	for index := 0; index < size; index++ {
+		result += formatNewline(depth)
+		var attribute = reflected.Type().Field(index).Name
+		var value = reflected.Field(index).Interface()
+		result += formatValue(attribute, depth)
+		result += ": "
+		result += formatValue(value, depth)
+	}
+	depth--
+	result += formatNewline(depth)
+	result += "]"
+	return result
 }
 
 // Reflection

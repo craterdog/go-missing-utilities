@@ -13,12 +13,30 @@
 package module_test
 
 import (
+	fmt "fmt"
 	uti "github.com/craterdog/go-missing-utilities/v2"
 	ass "github.com/stretchr/testify/assert"
 	tes "testing"
 )
 
+func TestPrimitives(t *tes.T) {
+	fmt.Println("Primitives")
+	fmt.Println(uti.Format(false))
+	fmt.Println(uti.Format(byte(16)))
+	fmt.Println(uti.Format(rune(1024)))
+	fmt.Println(uti.Format(uint8(5)))
+	fmt.Println(uti.Format(13))
+	fmt.Println(uti.Format(1.23e10))
+	fmt.Println(uti.Format(5i))
+	fmt.Println(uti.Format("Hello World!"))
+	fmt.Println()
+}
+
 func TestArrays(t *tes.T) {
+	fmt.Println("Arrays")
+	var empty = []int{}
+	fmt.Println(uti.Format(empty))
+
 	var first = []int{1, 2, 3}
 	var second = uti.CopyArray(first)
 	ass.True(t, uti.ArraysAreEqual(first, first))
@@ -27,9 +45,15 @@ func TestArrays(t *tes.T) {
 	first[1] = 5
 	ass.False(t, uti.ArraysAreEqual(first, second))
 	ass.False(t, uti.ArraysAreEqual(second, first))
+	fmt.Println(uti.Format(first))
+	fmt.Println()
 }
 
 func TestMaps(t *tes.T) {
+	fmt.Println("Maps")
+	var empty = map[string]int{}
+	fmt.Println(uti.Format(empty))
+
 	var first = map[string]int{
 		"one":   1,
 		"two":   2,
@@ -44,6 +68,32 @@ func TestMaps(t *tes.T) {
 	second = uti.CopyMap(first)
 	second["four"] = 4
 	ass.False(t, uti.MapsAreEqual(first, second))
+	fmt.Println(uti.Format(first))
+	fmt.Println()
+}
+
+type Array struct {
+	attribute []string
+}
+
+func (v *Array) AsArray() []string {
+	return v.attribute
+}
+
+func TestPointers(t *tes.T) {
+	fmt.Println("Pointers")
+	var integer = 5
+	var pointer = &integer
+	fmt.Println(uti.Format(pointer))
+
+	var array = &Array{
+		attribute: []string{
+			"foo",
+			"bar",
+		},
+	}
+	fmt.Println(uti.Format(array))
+	fmt.Println()
 }
 
 const template = `
@@ -76,7 +126,7 @@ const reserved = `
 	STRING
 `
 
-func TestStringManipulation(t *tes.T) {
+func TestStrings(t *tes.T) {
 	var mixedCase = "helloWorld"
 	var lowerCase = uti.MakeLowerCase(mixedCase)
 	ass.Equal(t, "helloWorld", lowerCase)
@@ -128,8 +178,7 @@ type Interface interface {
 	DoNothing()
 }
 
-type Class struct {
-}
+type Class struct{}
 
 func (v *Class) DoNothing() {
 }
