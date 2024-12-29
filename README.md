@@ -18,4 +18,4 @@ import (
 Project contributors are always welcome. Check out the contributing guidelines
 [here](https://github.com/craterdog/go-missing-utilities/blob/main/.github/CONTRIBUTING.md).
 
-<H5 align="center"> Copyright © 2009 - 2024  Crater Dog Technologies™. All rights reserved. </H5>
+<H5 align="center"> Copyright © 2009-2025. Crater Dog Technologies™. All rights reserved. </H5>
