@@ -134,6 +134,14 @@ func (v *Array) AsArray() []string {
 	return v.attribute
 }
 
+type Map struct {
+	attribute map[string]int
+}
+
+func (v *Map) AsMap() map[string]int {
+	return v.attribute
+}
+
 func TestPointers(t *tes.T) {
 	fmt.Println("Pointers")
 	var integer = 5
@@ -147,6 +155,15 @@ func TestPointers(t *tes.T) {
 		},
 	}
 	fmt.Println(uti.Format(array))
+
+	var map_ = &Map{
+		attribute: map[string]int{
+			"alpha": 1,
+			"beta":  2,
+			"gamma": 3,
+		},
+	}
+	fmt.Println(uti.Format(map_))
 	fmt.Println()
 }
 

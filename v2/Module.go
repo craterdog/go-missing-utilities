@@ -527,7 +527,7 @@ func formatPointer(
 			[]ref.Value{},
 		)[0].Interface()
 		result = formatMap(map_, depth)
-		var name = reflected.Type().Name()
+		var name = reflected.Type().String()
 		if IsDefined(name) {
 			result += "(" + name + ")"
 		}
