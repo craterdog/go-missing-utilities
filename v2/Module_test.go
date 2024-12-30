@@ -126,6 +126,23 @@ func TestMaps(t *tes.T) {
 	fmt.Println()
 }
 
+type triangle struct {
+	X float64
+	Y float64
+	r float64
+}
+
+func TestStructures(t *tes.T) {
+	fmt.Println("Structures")
+	var structure = triangle{
+		X: 3.0,
+		Y: 4.0,
+		r: 5.0,
+	}
+	fmt.Println(uti.Format(structure))
+	fmt.Println()
+}
+
 type Array struct {
 	attribute []string
 }

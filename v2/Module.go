@@ -426,13 +426,13 @@ func formatValue(
 		var reflected = ref.ValueOf(actual)
 		switch reflected.Kind() {
 		case ref.Array, ref.Slice:
-			return formatArray(actual, depth)
+			return formatArray(actual, depth) + "(array)"
 
 		case ref.Map:
-			return formatMap(actual, depth)
+			return formatMap(actual, depth) + "(map)"
 
 		case ref.Struct:
-			return formatStructure(actual, depth)
+			return formatStructure(actual, depth) + "(struct)"
 
 		case ref.Interface, ref.Pointer:
 			return formatPointer(actual, depth)
@@ -541,8 +541,12 @@ func formatPointer(
 			result += "(" + name + ")"
 		}
 	default:
+		var value = reflected.Elem().Interface()
+		result = formatValue(value, depth)
 		var name = reflected.Type().String()
-		result = name
+		if IsDefined(name) {
+			result += "(" + name + ")"
+		}
 	}
 	return result
 }
@@ -554,14 +558,18 @@ func formatStructure(
 	var result = "["
 	depth++
 	var reflected = ref.ValueOf(structure)
-	var size = reflected.Len()
-	for index := 0; index < size; index++ {
+	var fields = ref.VisibleFields(reflected.Type())
+	for index, field := range fields {
 		result += formatNewline(depth)
-		var attribute = reflected.Type().Field(index).Name
-		var value = reflected.Field(index).Interface()
-		result += formatValue(attribute, depth)
+		var name = field.Name
+		result += name
 		result += ": "
-		result += formatValue(value, depth)
+		if field.IsExported() {
+			var value = reflected.Field(index).Interface()
+			result += formatValue(value, depth)
+		} else {
+			result += "<private>"
+		}
 	}
 	depth--
 	result += formatNewline(depth)
