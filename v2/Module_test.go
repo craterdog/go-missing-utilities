@@ -16,31 +16,33 @@ import (
 	fmt "fmt"
 	uti "github.com/craterdog/go-missing-utilities/v2"
 	ass "github.com/stretchr/testify/assert"
+	stc "strconv"
 	tes "testing"
 )
 
 type Foolish interface {
 	GetFoo() int
 	GetBar() string
-	GetNil() Foolish
+	GetAny() any
 }
 
-func FooBar(foo int, bar string, baz Foolish) Foolish {
+func FooBar(foo int, bar string, baz any) Foolish {
 	return &foobar{foo, bar, baz}
 }
 
 type foobar struct {
 	foo int
 	bar string
-	Baz Foolish
+	Nil any
 }
 
-func (v *foobar) GetFoo() int     { return v.foo }
-func (v foobar) GetFoo2() int     { return v.foo }
-func (v *foobar) GetBar() string  { return v.bar }
-func (v foobar) GetBar2() string  { return v.bar }
-func (v *foobar) GetNil() Foolish { return nil }
-func (v foobar) GetNil2() Foolish { return nil }
+func (v *foobar) GetFoo() int    { return v.foo }
+func (v foobar) GetFoo2() int    { return v.foo }
+func (v *foobar) GetBar() string { return v.bar }
+func (v foobar) GetBar2() string { return v.bar }
+func (v *foobar) GetAny() any    { return nil }
+func (v foobar) GetAny2() any    { return nil }
+func (v *foobar) String() string { return v.bar + "-" + stc.Itoa(v.foo) }
 
 func TestImplementsType(t *tes.T) {
 	var aspect Foolish
@@ -162,8 +164,16 @@ func (v *Map) AsMap() map[string]int {
 func TestPointers(t *tes.T) {
 	fmt.Println("Pointers")
 	var integer = 5
+	fmt.Println(uti.Format(integer))
+
 	var pointer = &integer
 	fmt.Println(uti.Format(pointer))
+
+	var double = &pointer
+	fmt.Println(uti.Format(double))
+
+	var class = FooBar(2, "bar", nil)
+	fmt.Println(uti.Format(class))
 
 	var array = &Array{
 		attribute: []string{

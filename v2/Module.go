@@ -435,7 +435,7 @@ func formatValue(
 			return formatStructure(actual, depth) + "(struct)"
 
 		case ref.Interface, ref.Pointer:
-			return formatPointer(actual, depth)
+			return "&" + formatPointer(actual, depth)
 
 		default:
 			return ref.TypeOf(actual).String()
@@ -520,6 +520,7 @@ func formatPointer(
 	depth uint,
 ) string {
 	var result string
+	var type_ = ref.TypeOf(pointer).String()
 	var reflected = ref.ValueOf(pointer)
 	switch {
 	case reflected.MethodByName("AsMap").IsValid():
@@ -527,26 +528,20 @@ func formatPointer(
 			[]ref.Value{},
 		)[0].Interface()
 		result = formatMap(map_, depth)
-		var name = reflected.Type().String()
-		if IsDefined(name) {
-			result += "(" + name + ")"
-		}
+		result += "(" + type_ + ")"
 	case reflected.MethodByName("AsArray").IsValid():
 		var array = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0].Interface()
 		result = formatArray(array, depth)
-		var name = reflected.Type().String()
-		if IsDefined(name) {
-			result += "(" + name + ")"
-		}
+		result += "(" + type_ + ")"
+	case reflected.MethodByName("String").IsValid():
+		result = reflected.MethodByName("String").Call(
+			[]ref.Value{},
+		)[0].String()
 	default:
 		var value = reflected.Elem().Interface()
 		result = formatValue(value, depth)
-		var name = reflected.Type().String()
-		if IsDefined(name) {
-			result += "(" + name + ")"
-		}
 	}
 	return result
 }
