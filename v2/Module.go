@@ -472,6 +472,17 @@ func formatArray(
 	return result
 }
 
+func formatClass(
+	class ref.Value,
+) string {
+	var result = "["
+	result += class.MethodByName("String").Call(
+		[]ref.Value{},
+	)[0].String()
+	result += "]"
+	return result
+}
+
 func formatMap(
 	map_ any,
 	depth uint,
@@ -536,9 +547,8 @@ func formatPointer(
 		result = formatArray(array, depth)
 		result += "(" + type_ + ")"
 	case reflected.MethodByName("String").IsValid():
-		result = reflected.MethodByName("String").Call(
-			[]ref.Value{},
-		)[0].String()
+		result = formatClass(reflected)
+		result += "(" + type_ + ")"
 	default:
 		var value = reflected.Elem().Interface()
 		result = formatValue(value, depth)
