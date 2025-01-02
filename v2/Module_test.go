@@ -97,17 +97,17 @@ func TestPrimitives(t *tes.T) {
 	fmt.Println(uti.Format(complex5i))
 	fmt.Println(uti.Format(stringHello))
 	fmt.Println()
-	var mapOfAny = map[any]string{
-		booleanFalse: fmt.Sprintf("%v", uti.Format(booleanFalse)),
-		byte16:       fmt.Sprintf("%v", uti.Format(byte16)),
-		rune1024:     fmt.Sprintf("%v", uti.Format(rune1024)),
-		complex5i:    fmt.Sprintf("%v", uti.Format(complex5i)),
-		uint85:       fmt.Sprintf("%v", uti.Format(uint85)),
-		int13:        fmt.Sprintf("%v", uti.Format(int13)),
-		float:        fmt.Sprintf("%v", uti.Format(float)),
-		complex4:     fmt.Sprintf("%v", uti.Format(complex4)),
-		stringHello:  fmt.Sprintf("%v", uti.Format(stringHello)),
-		booleanTrue:  fmt.Sprintf("%v", uti.Format(booleanTrue)),
+	var mapOfAny = map[any]any{
+		booleanFalse: booleanFalse,
+		byte16:       byte16,
+		rune1024:     rune1024,
+		complex5i:    complex5i,
+		uint85:       uint85,
+		int13:        int13,
+		float:        float,
+		complex4:     complex4,
+		stringHello:  stringHello,
+		booleanTrue:  booleanTrue,
 	}
 	fmt.Println(uti.Format(mapOfAny))
 	fmt.Println()
@@ -120,7 +120,10 @@ func TestArrays(t *tes.T) {
 
 	var array = []any{nil, nil}
 	array[0] = array
-	array[1] = &Association{}
+	array[1] = &Association{
+		key:   "aKey",
+		value: "aValue",
+	}
 	fmt.Println(uti.Format(array))
 
 	var first = []int{1, 2, 3}
@@ -175,6 +178,10 @@ func TestStructures(t *tes.T) {
 	fmt.Println()
 }
 
+type Sequential interface {
+	AsArray() []string
+}
+
 type Array struct {
 	attribute []string
 }
@@ -194,10 +201,6 @@ func (v *Association) GetKey() any {
 
 func (v *Association) GetValue() any {
 	return v.value
-}
-
-func (v *Association) String() string {
-	return "an Association"
 }
 
 type Map struct {
@@ -231,7 +234,7 @@ func TestPointers(t *tes.T) {
 	var class = FooBar(2, "bar", nil)
 	fmt.Println(uti.Format(class))
 
-	var array = &Array{
+	var array Sequential = &Array{
 		attribute: []string{
 			"foo",
 			"bar",

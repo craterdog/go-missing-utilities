@@ -468,7 +468,7 @@ func formatAssociation(
 }
 
 func formatAssociations(
-	reflectedType string,
+	typeName string,
 	reflected ref.Value,
 	depth uint,
 ) string {
@@ -498,19 +498,53 @@ func formatAssociations(
 			result += "..."
 		}
 	}
-	result += "](" + reflectedType + ")"
+	result += "](" + typeName + ")"
 	return result
 }
 
-func formatClass(
-	reflectedType string,
+func formatAttribute(
+	name string,
+	value ref.Value,
+	depth uint,
+) string {
+	var result = MakeLowerCase(name)
+	result += ": "
+	result += formatValue(value, depth)
+	return result
+}
+
+func formatInstance(
+	typeName string,
 	reflected ref.Value,
+	depth uint,
 ) string {
 	var result = "["
-	result += reflected.MethodByName("String").Call(
-		[]ref.Value{},
-	)[0].String()
-	result += "](" + reflectedType + ")"
+	if reflected.MethodByName("String").IsValid() {
+		result += reflected.MethodByName("String").Call(
+			[]ref.Value{},
+		)[0].String()
+	} else {
+		depth++
+		var reflectedType = reflected.Type()
+		var count = reflectedType.NumMethod()
+		for index := 0; index < count; index++ {
+			var methodName = reflectedType.Method(index).Name
+			if sts.HasPrefix(methodName, "Get") {
+				var method = reflected.MethodByName(methodName)
+				if method.Type().NumIn() == 0 {
+					result += formatNewline(depth)
+					var attributeName = sts.TrimPrefix(methodName, "Get")
+					var attributeValue = method.Call(
+						[]ref.Value{},
+					)[0]
+					result += formatAttribute(attributeName, attributeValue, depth)
+				}
+			}
+		}
+		depth--
+		result += formatNewline(depth)
+	}
+	result += "](" + typeName + ")"
 	return result
 }
 
@@ -651,23 +685,27 @@ func formatPointer(
 	depth uint,
 ) string {
 	var result string
-	var reflectedType = reflected.Type().String()
+	var typeName = reflected.Type().String()
+	var lines = sts.Split(typeName, ".")
+	if len(lines) > 1 {
+		typeName = lines[1]
+	}
 	switch {
 	case reflected.MethodByName("GetKeys").IsValid():
 		// Format the sequence of associations.
 		var associations = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0]
-		result = formatAssociations(reflectedType, associations, depth)
+		result = formatAssociations(typeName, associations, depth)
 	case reflected.MethodByName("AsArray").IsValid():
 		// Format the sequence of values.
 		var values = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0]
-		result = formatSequence(reflectedType, values, depth)
-	case reflected.MethodByName("String").IsValid():
+		result = formatSequence(typeName, values, depth)
+	case reflected.NumMethod() > 0:
 		// Format the instance of a class.
-		result = formatClass(reflectedType, reflected)
+		result = formatInstance(typeName, reflected, depth)
 	default:
 		// Dereference the pointer.
 		var value = reflected.Elem()
@@ -677,7 +715,7 @@ func formatPointer(
 }
 
 func formatSequence(
-	reflectedType string,
+	typeName string,
 	reflected ref.Value,
 	depth uint,
 ) string {
@@ -701,7 +739,7 @@ func formatSequence(
 			result += "..."
 		}
 	}
-	result += "](" + reflectedType + ")"
+	result += "](" + typeName + ")"
 	return result
 }
 
