@@ -468,6 +468,7 @@ func formatAssociation(
 }
 
 func formatAssociations(
+	reflectedType string,
 	reflected ref.Value,
 	depth uint,
 ) string {
@@ -497,20 +498,19 @@ func formatAssociations(
 			result += "..."
 		}
 	}
-	var type_ = reflected.Type().String()
-	result += "](" + type_ + ")"
+	result += "](" + reflectedType + ")"
 	return result
 }
 
 func formatClass(
+	reflectedType string,
 	reflected ref.Value,
 ) string {
 	var result = "["
 	result += reflected.MethodByName("String").Call(
 		[]ref.Value{},
 	)[0].String()
-	var type_ = reflected.Type().String()
-	result += "](" + type_ + ")"
+	result += "](" + reflectedType + ")"
 	return result
 }
 
@@ -651,22 +651,23 @@ func formatPointer(
 	depth uint,
 ) string {
 	var result string
+	var reflectedType = reflected.Type().String()
 	switch {
 	case reflected.MethodByName("GetKeys").IsValid():
 		// Format the sequence of associations.
 		var associations = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0]
-		result = formatAssociations(associations, depth)
+		result = formatAssociations(reflectedType, associations, depth)
 	case reflected.MethodByName("AsArray").IsValid():
 		// Format the sequence of values.
 		var values = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0]
-		result = formatSequence(values, depth)
+		result = formatSequence(reflectedType, values, depth)
 	case reflected.MethodByName("String").IsValid():
 		// Format the instance of a class.
-		result = formatClass(reflected)
+		result = formatClass(reflectedType, reflected)
 	default:
 		// Dereference the pointer.
 		var value = reflected.Elem()
@@ -676,6 +677,7 @@ func formatPointer(
 }
 
 func formatSequence(
+	reflectedType string,
 	reflected ref.Value,
 	depth uint,
 ) string {
@@ -699,8 +701,7 @@ func formatSequence(
 			result += "..."
 		}
 	}
-	var type_ = reflected.Type().String()
-	result += "](" + type_ + ")"
+	result += "](" + reflectedType + ")"
 	return result
 }
 
