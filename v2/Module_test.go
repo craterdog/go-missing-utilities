@@ -75,16 +75,41 @@ func TestIsDefined(t *tes.T) {
 	ass.True(t, uti.IsDefined(slice))
 }
 
+var booleanFalse = false
+var booleanTrue = true
+var byte16 = byte(16)
+var rune1024 = rune(1024)
+var uint85 = uint8(5)
+var int13 = 13
+var float = 1.23e10
+var complex4 = 4 + 0i
+var complex5i = 5i
+var stringHello = "Hello World!"
+
 func TestPrimitives(t *tes.T) {
 	fmt.Println("Primitives")
-	fmt.Println(uti.Format(false))
-	fmt.Println(uti.Format(byte(16)))
-	fmt.Println(uti.Format(rune(1024)))
-	fmt.Println(uti.Format(uint8(5)))
-	fmt.Println(uti.Format(13))
-	fmt.Println(uti.Format(1.23e10))
-	fmt.Println(uti.Format(5i))
-	fmt.Println(uti.Format("Hello World!"))
+	fmt.Println(uti.Format(booleanFalse))
+	fmt.Println(uti.Format(byte16))
+	fmt.Println(uti.Format(rune1024))
+	fmt.Println(uti.Format(uint85))
+	fmt.Println(uti.Format(int13))
+	fmt.Println(uti.Format(float))
+	fmt.Println(uti.Format(complex5i))
+	fmt.Println(uti.Format(stringHello))
+	fmt.Println()
+	var mapOfAny = map[any]string{
+		booleanFalse: fmt.Sprintf("%v", uti.Format(booleanFalse)),
+		byte16:       fmt.Sprintf("%v", uti.Format(byte16)),
+		rune1024:     fmt.Sprintf("%v", uti.Format(rune1024)),
+		complex5i:    fmt.Sprintf("%v", uti.Format(complex5i)),
+		uint85:       fmt.Sprintf("%v", uti.Format(uint85)),
+		int13:        fmt.Sprintf("%v", uti.Format(int13)),
+		float:        fmt.Sprintf("%v", uti.Format(float)),
+		complex4:     fmt.Sprintf("%v", uti.Format(complex4)),
+		stringHello:  fmt.Sprintf("%v", uti.Format(stringHello)),
+		booleanTrue:  fmt.Sprintf("%v", uti.Format(booleanTrue)),
+	}
+	fmt.Println(uti.Format(mapOfAny))
 	fmt.Println()
 }
 
@@ -92,6 +117,11 @@ func TestArrays(t *tes.T) {
 	fmt.Println("Arrays")
 	var empty = []int{}
 	fmt.Println(uti.Format(empty))
+
+	var array = []any{nil, nil}
+	array[0] = array
+	array[1] = &Association{}
+	fmt.Println(uti.Format(array))
 
 	var first = []int{1, 2, 3}
 	var second = uti.CopyArray(first)
@@ -153,12 +183,38 @@ func (v *Array) AsArray() []string {
 	return v.attribute
 }
 
-type Map struct {
-	attribute map[string]int
+type Association struct {
+	key   any
+	value any
 }
 
-func (v *Map) AsMap() map[string]int {
-	return v.attribute
+func (v *Association) GetKey() any {
+	return v.key
+}
+
+func (v *Association) GetValue() any {
+	return v.value
+}
+
+func (v *Association) String() string {
+	return "an Association"
+}
+
+type Map struct {
+	associations []*Association
+}
+
+func (v *Map) GetKeys() []any {
+	var size = len(v.associations)
+	var keys = make([]any, size)
+	for index, association := range v.associations {
+		keys[index] = association.GetKey()
+	}
+	return keys
+}
+
+func (v *Map) AsArray() []*Association {
+	return v.associations
 }
 
 func TestPointers(t *tes.T) {
@@ -184,10 +240,10 @@ func TestPointers(t *tes.T) {
 	fmt.Println(uti.Format(array))
 
 	var map_ = &Map{
-		attribute: map[string]int{
-			"alpha": 1,
-			"beta":  2,
-			"gamma": 3,
+		associations: []*Association{
+			&Association{"alpha", 1},
+			&Association{"beta", 2},
+			&Association{"gamma", 3},
 		},
 	}
 	fmt.Println(uti.Format(map_))

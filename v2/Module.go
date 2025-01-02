@@ -16,8 +16,11 @@ Package "module" defines the global functions provided by this module.
 package module
 
 import (
+	fmt "fmt"
+	cmp "math/cmplx"
 	osx "os"
 	ref "reflect"
+	sor "sort"
 	stc "strconv"
 	sts "strings"
 	uni "unicode"
@@ -358,228 +361,8 @@ func ReplaceAll(
 func Format(
 	value any,
 ) string {
-	return formatValue(value, 0)
-}
-
-func formatValue(
-	value any,
-	depth uint,
-) string {
-	if value == nil {
-		return "<nil>"
-	}
-	switch actual := value.(type) {
-	case nil:
-		return "<nil>"
-
-	case bool:
-		return stc.FormatBool(actual)
-
-	case uint:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint8:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint16:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint32:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint64:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uintptr:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-
-	case int:
-		return stc.FormatInt(int64(actual), 10)
-	case int8:
-		return stc.FormatInt(int64(actual), 10)
-	case int16:
-		return stc.FormatInt(int64(actual), 10)
-	case int64:
-		return stc.FormatInt(int64(actual), 10)
-
-	case float32:
-		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
-		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
-			result += ".0"
-		}
-		return result
-	case float64:
-		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
-		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
-			result += ".0"
-		}
-		return result
-
-	case complex64:
-		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
-	case complex128:
-		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
-
-	case rune:
-		return stc.QuoteRune(actual)
-
-	case string:
-		return stc.Quote(actual)
-
-	default:
-		// The value is either a sequence of values or a pointer to something.
-		var reflected = ref.ValueOf(actual)
-		switch reflected.Kind() {
-		case ref.Array, ref.Slice:
-			return formatArray(actual, depth) + "(array)"
-
-		case ref.Map:
-			return formatMap(actual, depth) + "(map)"
-
-		case ref.Struct:
-			return formatStructure(actual, depth) + "(struct)"
-
-		case ref.Interface, ref.Pointer:
-			return "&" + formatPointer(actual, depth)
-
-		default:
-			return ref.TypeOf(actual).String()
-		}
-	}
-}
-
-func formatArray(
-	array any,
-	depth uint,
-) string {
-	var result = "["
-	var reflected = ref.ValueOf(array)
-	var size = reflected.Len()
-	switch {
-	case size == 0:
-		// This is an empty array.
-		result += " "
-	case size == 1:
-		var value = reflected.Index(0).Interface()
-		result += formatValue(value, depth)
-	default:
-		// This is a multiline sequence of values.
-		depth++
-		for index := 0; index < size; index++ {
-			result += formatNewline(depth)
-			var value = reflected.Index(index).Interface()
-			result += formatValue(value, depth)
-		}
-		depth--
-		result += formatNewline(depth)
-	}
-	result += "]"
-	return result
-}
-
-func formatClass(
-	class ref.Value,
-) string {
-	var result = "["
-	result += class.MethodByName("String").Call(
-		[]ref.Value{},
-	)[0].String()
-	result += "]"
-	return result
-}
-
-func formatMap(
-	map_ any,
-	depth uint,
-) string {
-	var result = "["
-	var reflected = ref.ValueOf(map_)
-	var size = reflected.Len()
-	switch {
-	case size == 0:
-		// This is an empty map.
-		result += ":"
-	default:
-		// This is a multiline sequence of associations.
-		depth++
-		var association = reflected.MapRange()
-		for association.Next() {
-			result += formatNewline(depth)
-			var key = association.Key().Interface()
-			var value = association.Value().Interface()
-			result += formatValue(key, depth)
-			result += ": "
-			result += formatValue(value, depth)
-		}
-		depth--
-		result += formatNewline(depth)
-	}
-	result += "]"
-	return result
-}
-
-func formatNewline(
-	depth uint,
-) string {
-	var result = "\n"
-	var indentation = "    "
-	var level uint
-	for level < depth {
-		result += indentation
-		level++
-	}
-	return result
-}
-
-func formatPointer(
-	pointer any,
-	depth uint,
-) string {
-	var result string
-	var type_ = ref.TypeOf(pointer).String()
-	var reflected = ref.ValueOf(pointer)
-	switch {
-	case reflected.MethodByName("AsMap").IsValid():
-		var map_ = reflected.MethodByName("AsMap").Call(
-			[]ref.Value{},
-		)[0].Interface()
-		result = formatMap(map_, depth)
-		result += "(" + type_ + ")"
-	case reflected.MethodByName("AsArray").IsValid():
-		var array = reflected.MethodByName("AsArray").Call(
-			[]ref.Value{},
-		)[0].Interface()
-		result = formatArray(array, depth)
-		result += "(" + type_ + ")"
-	case reflected.MethodByName("String").IsValid():
-		result = formatClass(reflected)
-		result += "(" + type_ + ")"
-	default:
-		var value = reflected.Elem().Interface()
-		result = formatValue(value, depth)
-	}
-	return result
-}
-
-func formatStructure(
-	structure any,
-	depth uint,
-) string {
-	var result = "["
-	depth++
-	var reflected = ref.ValueOf(structure)
-	var fields = ref.VisibleFields(reflected.Type())
-	for index, field := range fields {
-		result += formatNewline(depth)
-		var name = field.Name
-		result += name
-		result += ": "
-		if field.IsExported() {
-			var value = reflected.Field(index).Interface()
-			result += formatValue(value, depth)
-		} else {
-			result += "<private>"
-		}
-	}
-	depth--
-	result += formatNewline(depth)
-	result += "]"
-	return result
+	var reflected = ref.ValueOf(value)
+	return formatValue(reflected, 0)
 }
 
 // Reflection
@@ -639,4 +422,399 @@ func IsUndefined(
 	value any,
 ) bool {
 	return !IsDefined(value)
+}
+
+// Private
+
+const maximumDepth = 8
+
+func formatArray(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var result = "["
+	var size = reflected.Len()
+	if size == 0 {
+		// This is an empty array.
+		result += " "
+	} else {
+		// This is a multivalued array.
+		if depth < maximumDepth {
+			depth++
+			for index := 0; index < size; index++ {
+				result += formatNewline(depth)
+				var value = reflected.Index(index)
+				result += formatValue(value, depth)
+			}
+			depth--
+			result += formatNewline(depth)
+		} else {
+			result += "..."
+		}
+	}
+	result += "](array)"
+	return result
+}
+
+func formatAssociation(
+	key ref.Value,
+	value ref.Value,
+	depth uint,
+) string {
+	var result = formatValue(key, depth)
+	result += ": "
+	result += formatValue(value, depth)
+	return result
+}
+
+func formatAssociations(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var result = "["
+	var size = reflected.Len()
+	if size == 0 {
+		// This is an empty sequence of associations.
+		result += ":"
+	} else {
+		// This is a multivalued sequence of associations.
+		if depth < maximumDepth {
+			depth++
+			for index := 0; index < size; index++ {
+				result += formatNewline(depth)
+				var association = reflected.Index(index)
+				var key = association.MethodByName("GetKey").Call(
+					[]ref.Value{},
+				)[0]
+				var value = association.MethodByName("GetValue").Call(
+					[]ref.Value{},
+				)[0]
+				result += formatAssociation(key, value, depth)
+			}
+			depth--
+			result += formatNewline(depth)
+		} else {
+			result += "..."
+		}
+	}
+	var type_ = reflected.Type().String()
+	result += "](" + type_ + ")"
+	return result
+}
+
+func formatClass(
+	reflected ref.Value,
+) string {
+	var result = "["
+	result += reflected.MethodByName("String").Call(
+		[]ref.Value{},
+	)[0].String()
+	var type_ = reflected.Type().String()
+	result += "](" + type_ + ")"
+	return result
+}
+
+var typeMap = map[ref.Kind]uint8{
+	ref.Bool:       0,
+	ref.Uint8:      1,
+	ref.Uint16:     2,
+	ref.Uint32:     3,
+	ref.Uint64:     4,
+	ref.Uint:       5,
+	ref.Int8:       6,
+	ref.Int16:      7,
+	ref.Int64:      8,
+	ref.Int:        9,
+	ref.Float32:    10,
+	ref.Float64:    11,
+	ref.Complex64:  12,
+	ref.Complex128: 13,
+	ref.Int32:      14,
+	ref.String:     15,
+}
+
+func formatMap(
+	reflected ref.Value,
+	depth uint,
+) string {
+	// NOTE:
+	// The intrinsic Go map data type is non-deterministic.  The ordering of the
+	// keys is determined by a hash function which means that two maps with the
+	// same keys will likely return the keys in a different order.  This also
+	// means that the same code will likely run differently each time it is
+	// executed.  It is important—for testing and debugging purposes—that the
+	// formatting functionality be deterministic, even for Go maps.  This
+	// private function attempts to ensure determinism.  The keys are sorted
+	// before formatting with the following sorting criteria:
+	//
+	// Key type ordering (see the typeMap data structure above):
+	//  * booleans
+	//  * unsigned integers
+	//  * signed integers
+	//  * floats
+	//  * complex numbers
+	//  * runes
+	//  * strings
+	//
+	// Value ordering:
+	//  * false before true
+	//  * complex values by their amplitudes
+	//  * runes by their unicode numbers
+	//  * strings alphabetically by the unicode number of their characters
+	//
+	var result = "["
+	var size = reflected.Len()
+	if size == 0 {
+		// This is an empty map.
+		result += ":"
+	} else {
+		// This is a multivalued map.
+		if depth < maximumDepth {
+			depth++
+			// First sort the keys since Go maps are deterministic.
+			var keys = reflected.MapKeys()
+			sor.SliceStable(
+				keys,
+				func(i, j int) bool {
+					// Convert wrapper types into their element types.
+					var firstKey = keys[i]
+					var secondKey = keys[j]
+					if firstKey.Kind() == ref.Interface {
+						firstKey = keys[i].Elem()
+					}
+					if secondKey.Kind() == ref.Interface {
+						secondKey = keys[j].Elem()
+					}
+					// Sort by key type if the keys have different types.
+					if firstKey.Kind() != secondKey.Kind() {
+						var firstType = typeMap[firstKey.Kind()]
+						var secondType = typeMap[secondKey.Kind()]
+						return firstType < secondType
+					}
+					// Sort by key value if they have the same type.
+					switch firstKey.Kind() {
+					case ref.Bool:
+						return !(firstKey.Bool()) && secondKey.Bool()
+					case ref.Int, ref.Int8, ref.Int16, ref.Int32, ref.Int64:
+						return firstKey.Int() < secondKey.Int()
+					case ref.Uint, ref.Uint8, ref.Uint16, ref.Uint32, ref.Uint64:
+						return firstKey.Uint() < secondKey.Uint()
+					case ref.Float32, ref.Float64:
+						return firstKey.Float() < secondKey.Float()
+					case ref.Complex64, ref.Complex128:
+						var firstAmplitude = cmp.Abs(firstKey.Complex())
+						var secondAmplitude = cmp.Abs(secondKey.Complex())
+						return firstAmplitude < secondAmplitude
+					case ref.String:
+						return firstKey.String() < secondKey.String()
+					default:
+						var message = fmt.Sprintf(
+							"Attempted to compare an unknown key type: %v of type %T",
+							firstKey.Interface(),
+							firstKey.Interface(),
+						)
+						panic(message)
+					}
+				},
+			)
+			// Format the key-value pairs in order.
+			for _, key := range keys {
+				result += formatNewline(depth)
+				var value = reflected.MapIndex(key)
+				result += formatAssociation(key, value, depth)
+			}
+			depth--
+			result += formatNewline(depth)
+		} else {
+			result += "..."
+		}
+	}
+	result += "](map)"
+	return result
+}
+
+func formatNewline(
+	depth uint,
+) string {
+	var result = "\n"
+	var indentation = "    "
+	var level uint
+	for level < depth {
+		result += indentation
+		level++
+	}
+	return result
+}
+
+func formatPointer(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var result string
+	switch {
+	case reflected.MethodByName("GetKeys").IsValid():
+		// Format the sequence of associations.
+		var associations = reflected.MethodByName("AsArray").Call(
+			[]ref.Value{},
+		)[0]
+		result = formatAssociations(associations, depth)
+	case reflected.MethodByName("AsArray").IsValid():
+		// Format the sequence of values.
+		var values = reflected.MethodByName("AsArray").Call(
+			[]ref.Value{},
+		)[0]
+		result = formatSequence(values, depth)
+	case reflected.MethodByName("String").IsValid():
+		// Format the instance of a class.
+		result = formatClass(reflected)
+	default:
+		// Dereference the pointer.
+		var value = reflected.Elem()
+		result = formatValue(value, depth)
+	}
+	return result
+}
+
+func formatSequence(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var result = "["
+	var size = reflected.Len()
+	if size == 0 {
+		// This is an empty sequence.
+		result += " "
+	} else {
+		// This is a multivalued sequence.
+		if depth < maximumDepth {
+			depth++
+			for index := 0; index < size; index++ {
+				result += formatNewline(depth)
+				var value = reflected.Index(index)
+				result += formatValue(value, depth)
+			}
+			depth--
+			result += formatNewline(depth)
+		} else {
+			result += "..."
+		}
+	}
+	var type_ = reflected.Type().String()
+	result += "](" + type_ + ")"
+	return result
+}
+
+func formatStructure(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var result = "["
+	if depth < maximumDepth {
+		depth++
+		var fields = ref.VisibleFields(reflected.Type())
+		for index, field := range fields {
+			result += formatNewline(depth)
+			var name = field.Name
+			result += name
+			result += ": "
+			if field.IsExported() {
+				var value = reflected.Field(index)
+				result += formatValue(value, depth)
+			} else {
+				result += "<private>"
+			}
+		}
+		depth--
+		result += formatNewline(depth)
+	} else {
+		result += "..."
+	}
+	result += "](struct)"
+	return result
+}
+
+func formatValue(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var value = reflected.Interface()
+	if value == nil {
+		return "<nil>"
+	}
+	switch actual := value.(type) {
+	case nil:
+		return "<nil>"
+
+	case bool:
+		return stc.FormatBool(actual)
+
+	case uint:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint8:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint16:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint32:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uint64:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case uintptr:
+		return "0x" + stc.FormatUint(uint64(actual), 16)
+
+	case int:
+		return stc.FormatInt(int64(actual), 10)
+	case int8:
+		return stc.FormatInt(int64(actual), 10)
+	case int16:
+		return stc.FormatInt(int64(actual), 10)
+	case int64:
+		return stc.FormatInt(int64(actual), 10)
+
+	case float32:
+		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
+		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
+			result += ".0"
+		}
+		return result
+	case float64:
+		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
+		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
+			result += ".0"
+		}
+		return result
+
+	case complex64:
+		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
+	case complex128:
+		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
+
+	case rune:
+		return stc.QuoteRune(actual)
+
+	case string:
+		return stc.Quote(actual)
+
+	default:
+		// The value is either a compound data type or a pointer to something.
+		reflected = ref.ValueOf(actual)
+		switch reflected.Kind() {
+		case ref.Array, ref.Slice:
+			return formatArray(reflected, depth)
+
+		case ref.Map:
+			return formatMap(reflected, depth)
+
+		case ref.Struct:
+			return formatStructure(reflected, depth)
+
+		case ref.Pointer:
+			return "&" + formatPointer(reflected, depth)
+
+		case ref.Interface:
+			return "&" + formatPointer(reflected.Elem(), depth)
+
+		default:
+			return reflected.Type().String()
+		}
+	}
 }
