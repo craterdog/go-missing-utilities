@@ -468,11 +468,10 @@ func formatAssociation(
 }
 
 func formatAssociations(
-	typeName string,
 	reflected ref.Value,
 	depth uint,
 ) string {
-	var result = "["
+	var result string
 	var size = reflected.Len()
 	if size == 0 {
 		// This is an empty sequence of associations.
@@ -498,32 +497,106 @@ func formatAssociations(
 			result += "..."
 		}
 	}
-	result += "](" + typeName + ")"
 	return result
 }
 
-func formatAttribute(
-	name string,
-	value ref.Value,
+func formatBoolean(
+	reflected ref.Value,
 	depth uint,
 ) string {
-	var result = MakeLowerCase(name)
-	result += ": "
-	result += formatValue(value, depth)
+	var value = reflected.Bool()
+	return stc.FormatBool(value)
+}
+
+func formatChannel(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var direction string
+	var reflectedType = reflected.Type()
+	switch reflectedType.ChanDir() {
+	case ref.RecvDir:
+		direction = "Receive"
+	case ref.SendDir:
+		direction = "Send"
+	case ref.BothDir:
+		direction = "Both"
+	}
+	var result = "["
+	depth++
+	result += formatNewline(depth)
+	result += "Direction: " + direction
+	result += formatNewline(depth)
+	result += "Type: " + formatType(reflectedType.Elem())
+	result += formatNewline(depth)
+	result += "Size: " + stc.Itoa(reflected.Len())
+	result += formatNewline(depth)
+	result += "Capacity: " + stc.Itoa(reflected.Cap())
+	depth--
+	result += formatNewline(depth)
+	result += "](chan)"
+	return result
+}
+
+func formatComplex(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var value = reflected.Complex()
+	return stc.FormatComplex(complex128(value), 'G', -1, 64)
+}
+
+func formatFloat(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var value = reflected.Float()
+	var result = stc.FormatFloat(float64(value), 'G', -1, 64)
+	if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
+		result += ".0"
+	}
+	return result
+}
+
+func formatFunction(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var reflectedType = reflected.Type()
+	var result = "func("
+	var count = reflectedType.NumIn()
+	for index := 0; index < count; index++ {
+		var argumentType = reflectedType.In(index)
+		result += formatType(argumentType)
+		if index < count-1 {
+			result += ", "
+		}
+	}
+	result += ")"
+	count = reflectedType.NumOut()
+	if count > 0 {
+		result += " "
+	}
+	if count > 0 {
+		result += "("
+		for index := 0; index < count; index++ {
+			var argumentType = reflectedType.Out(index)
+			result += formatType(argumentType)
+			if index < count-1 {
+				result += ", "
+			}
+		}
+		result += ")"
+	}
 	return result
 }
 
 func formatInstance(
-	typeName string,
 	reflected ref.Value,
 	depth uint,
 ) string {
-	var result = "["
-	if reflected.MethodByName("String").IsValid() {
-		result += reflected.MethodByName("String").Call(
-			[]ref.Value{},
-		)[0].String()
-	} else {
+	var result string
+	if depth < maximumDepth {
 		depth++
 		var reflectedType = reflected.Type()
 		var count = reflectedType.NumMethod()
@@ -537,34 +610,65 @@ func formatInstance(
 					var attributeValue = method.Call(
 						[]ref.Value{},
 					)[0]
-					result += formatAttribute(attributeName, attributeValue, depth)
+					result += attributeName
+					result += ": "
+					result += formatValue(attributeValue, depth)
 				}
 			}
 		}
 		depth--
 		result += formatNewline(depth)
+	} else {
+		result += "..."
 	}
-	result += "](" + typeName + ")"
+	return result
+}
+
+func formatInteger(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var value = reflected.Int()
+	return stc.FormatInt(int64(value), 10)
+}
+
+func formatInterface(
+	reflected ref.Value,
+	depth uint,
+) string {
+	// Format the value behind the "any" interface.
+	var value = reflected.Elem()
+	var result = formatValue(value, depth)
 	return result
 }
 
 var typeMap = map[ref.Kind]uint8{
-	ref.Bool:       0,
-	ref.Uint8:      1,
-	ref.Uint16:     2,
-	ref.Uint32:     3,
-	ref.Uint64:     4,
-	ref.Uint:       5,
-	ref.Int8:       6,
-	ref.Int16:      7,
-	ref.Int64:      8,
-	ref.Int:        9,
-	ref.Float32:    10,
-	ref.Float64:    11,
-	ref.Complex64:  12,
-	ref.Complex128: 13,
-	ref.Int32:      14,
-	ref.String:     15,
+	ref.Bool:          0,
+	ref.Uint8:         1,
+	ref.Uint16:        2,
+	ref.Uint32:        3,
+	ref.Uint64:        4,
+	ref.Uint:          5,
+	ref.Int8:          6,
+	ref.Int16:         7,
+	ref.Int64:         8,
+	ref.Int:           9,
+	ref.Float32:       10,
+	ref.Float64:       11,
+	ref.Complex64:     12,
+	ref.Complex128:    13,
+	ref.Int32:         14,
+	ref.String:        15,
+	ref.Func:          16,
+	ref.Chan:          17,
+	ref.Array:         18,
+	ref.Slice:         19,
+	ref.Map:           20,
+	ref.Struct:        21,
+	ref.Pointer:       22,
+	ref.Interface:     23,
+	ref.Uintptr:       24,
+	ref.UnsafePointer: 25,
 }
 
 func formatMap(
@@ -614,10 +718,10 @@ func formatMap(
 					var firstKey = keys[i]
 					var secondKey = keys[j]
 					if firstKey.Kind() == ref.Interface {
-						firstKey = keys[i].Elem()
+						firstKey = firstKey.Elem()
 					}
 					if secondKey.Kind() == ref.Interface {
-						secondKey = keys[j].Elem()
+						secondKey = secondKey.Elem()
 					}
 					// Sort by key type if the keys have different types.
 					if firstKey.Kind() != secondKey.Kind() {
@@ -684,42 +788,46 @@ func formatPointer(
 	reflected ref.Value,
 	depth uint,
 ) string {
-	var result string
-	var typeName = reflected.Type().String()
-	var lines = sts.Split(typeName, ".")
-	if len(lines) > 1 {
-		typeName = lines[1]
-	}
+	var result = "&["
 	switch {
 	case reflected.MethodByName("GetKeys").IsValid():
 		// Format the sequence of associations.
 		var associations = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0]
-		result = formatAssociations(typeName, associations, depth)
+		result += formatAssociations(associations, depth)
 	case reflected.MethodByName("AsArray").IsValid():
 		// Format the sequence of values.
 		var values = reflected.MethodByName("AsArray").Call(
 			[]ref.Value{},
 		)[0]
-		result = formatSequence(typeName, values, depth)
+		result += formatSequence(values, depth)
 	case reflected.NumMethod() > 0:
 		// Format the instance of a class.
-		result = formatInstance(typeName, reflected, depth)
+		result += formatInstance(reflected, depth)
 	default:
 		// Dereference the pointer.
 		var value = reflected.Elem()
-		result = formatValue(value, depth)
+		result += formatValue(value, depth)
 	}
+	var typeName = formatType(reflected.Type().Elem())
+	result += "](" + typeName + ")"
 	return result
 }
 
-func formatSequence(
-	typeName string,
+func formatRune(
 	reflected ref.Value,
 	depth uint,
 ) string {
-	var result = "["
+	var value = rune(reflected.Int())
+	return stc.QuoteRune(value)
+}
+
+func formatSequence(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var result string
 	var size = reflected.Len()
 	if size == 0 {
 		// This is an empty sequence.
@@ -739,8 +847,15 @@ func formatSequence(
 			result += "..."
 		}
 	}
-	result += "](" + typeName + ")"
 	return result
+}
+
+func formatString(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var value = reflected.String()
+	return stc.Quote(value)
 }
 
 func formatStructure(
@@ -772,88 +887,92 @@ func formatStructure(
 	return result
 }
 
+func formatType(
+	reflectedType ref.Type,
+) string {
+	var result = reflectedType.Name()
+	if len(result) == 0 {
+		result = reflectedType.String()
+	}
+	if result == "interface {}" {
+		result = "any"
+	}
+	return result
+}
+
+func formatUnsafe(
+	reflected ref.Value,
+	depth uint,
+) string {
+	return "<unsafe>"
+}
+
+func formatUnsigned(
+	reflected ref.Value,
+	depth uint,
+) string {
+	var value = reflected.Uint()
+	return "0x" + stc.FormatUint(uint64(value), 16)
+}
+
 func formatValue(
 	reflected ref.Value,
 	depth uint,
 ) string {
-	var value = reflected.Interface()
-	if value == nil {
+	if !reflected.IsValid() {
 		return "<nil>"
 	}
-	switch actual := value.(type) {
-	case nil:
-		return "<nil>"
+	switch reflected.Kind() {
+	case ref.Bool:
+		return formatBoolean(reflected, depth)
 
-	case bool:
-		return stc.FormatBool(actual)
+	case ref.Uint, ref.Uint8, ref.Uint16, ref.Uint32, ref.Uint64, ref.Uintptr:
+		return formatUnsigned(reflected, depth)
 
-	case uint:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint8:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint16:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint32:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uint64:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
-	case uintptr:
-		return "0x" + stc.FormatUint(uint64(actual), 16)
+	case ref.Int, ref.Int8, ref.Int16, ref.Int64:
+		return formatInteger(reflected, depth)
 
-	case int:
-		return stc.FormatInt(int64(actual), 10)
-	case int8:
-		return stc.FormatInt(int64(actual), 10)
-	case int16:
-		return stc.FormatInt(int64(actual), 10)
-	case int64:
-		return stc.FormatInt(int64(actual), 10)
+	case ref.Float32, ref.Float64:
+		return formatFloat(reflected, depth)
 
-	case float32:
-		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
-		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
-			result += ".0"
-		}
-		return result
-	case float64:
-		var result = stc.FormatFloat(float64(actual), 'G', -1, 64)
-		if !sts.Contains(result, ".") && !sts.Contains(result, "E") {
-			result += ".0"
-		}
-		return result
+	case ref.Complex64, ref.Complex128:
+		return formatComplex(reflected, depth)
 
-	case complex64:
-		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
-	case complex128:
-		return stc.FormatComplex(complex128(actual), 'G', -1, 64)
+	case ref.Int32:
+		return formatRune(reflected, depth)
 
-	case rune:
-		return stc.QuoteRune(actual)
+	case ref.String:
+		return formatString(reflected, depth)
 
-	case string:
-		return stc.Quote(actual)
+	case ref.Func:
+		return formatFunction(reflected, depth)
+
+	case ref.Chan:
+		return formatChannel(reflected, depth)
+
+	case ref.Array, ref.Slice:
+		return formatArray(reflected, depth)
+
+	case ref.Map:
+		return formatMap(reflected, depth)
+
+	case ref.Struct:
+		return formatStructure(reflected, depth)
+
+	case ref.Pointer:
+		return formatPointer(reflected, depth)
+
+	case ref.Interface:
+		return formatInterface(reflected, depth)
+
+	case ref.UnsafePointer:
+		return formatUnsafe(reflected, depth)
 
 	default:
-		// The value is either a compound data type or a pointer to something.
-		reflected = ref.ValueOf(actual)
-		switch reflected.Kind() {
-		case ref.Array, ref.Slice:
-			return formatArray(reflected, depth)
-
-		case ref.Map:
-			return formatMap(reflected, depth)
-
-		case ref.Struct:
-			return formatStructure(reflected, depth)
-
-		case ref.Pointer:
-			return "&" + formatPointer(reflected, depth)
-
-		case ref.Interface:
-			return "&" + formatPointer(reflected.Elem(), depth)
-
-		default:
-			return reflected.Type().String()
-		}
+		var message = fmt.Sprintf(
+			"Attempted to format an unsupported type: %v",
+			reflected.Kind(),
+		)
+		panic(message)
 	}
 }

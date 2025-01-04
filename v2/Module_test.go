@@ -16,33 +16,103 @@ import (
 	fmt "fmt"
 	uti "github.com/craterdog/go-missing-utilities/v2"
 	ass "github.com/stretchr/testify/assert"
-	stc "strconv"
 	tes "testing"
 )
 
+type Sequential interface {
+	AsArray() []string
+}
+
+type Array []string
+
+func (v Array) AsArray() []string {
+	return []string(v)
+}
+
+var array Sequential = Array([]string{"alpha", "beta", "gamma"})
+
+type Association struct {
+	key   any
+	value any
+}
+
+func (v *Association) GetKey() any {
+	return v.key
+}
+
+func (v *Association) GetValue() any {
+	return v.value
+}
+
+type Map struct {
+	associations []*Association
+}
+
+func (v *Map) GetKeys() []any {
+	var size = len(v.associations)
+	var keys = make([]any, size)
+	for index, association := range v.associations {
+		keys[index] = association.GetKey()
+	}
+	return keys
+}
+
+func (v *Map) AsArray() []*Association {
+	return v.associations
+}
+
+var map_ = &Map{
+	associations: []*Association{
+		&Association{"one", 1},
+		&Association{"two", 2},
+		&Association{"three", 3},
+	},
+}
+
 type Foolish interface {
 	GetFoo() int
-	GetBar() string
-	GetAny() any
 }
 
-func FooBar(foo int, bar string, baz any) Foolish {
-	return &foobar{foo, bar, baz}
+type Barbaric interface {
+	GetBar() any
 }
 
-type foobar struct {
+type FooBarLike interface {
+	Foolish
+	Barbaric
+}
+
+func CreateFooBar(foo int, bar any) FooBarLike {
+	return &FooBar{foo, bar}
+}
+
+type FooBar struct {
 	foo int
-	bar string
-	Nil any
+	bar any
 }
 
-func (v *foobar) GetFoo() int    { return v.foo }
-func (v foobar) GetFoo2() int    { return v.foo }
-func (v *foobar) GetBar() string { return v.bar }
-func (v foobar) GetBar2() string { return v.bar }
-func (v *foobar) GetAny() any    { return nil }
-func (v foobar) GetAny2() any    { return nil }
-func (v *foobar) String() string { return v.bar + "-" + stc.Itoa(v.foo) }
+func (v *FooBar) GetFoo() int { return v.foo }
+func (v *FooBar) GetBar() any { return v.bar }
+
+var structure = FooBar{
+	foo: 0,
+	bar: "private",
+}
+
+var aspect = CreateFooBar(42, "the answer")
+
+func CreatePolar(amplitude float64, phase float64) *Polar {
+	return &Polar{amplitude, phase}
+}
+
+type Polar struct {
+	amplitude float64
+	phase     float64
+}
+
+func (v *Polar) String() string {
+	return fmt.Sprintf("(%ve^%vi)", v.amplitude, v.phase)
+}
 
 func TestImplementsType(t *tes.T) {
 	var aspect Foolish
@@ -50,7 +120,7 @@ func TestImplementsType(t *tes.T) {
 	ass.False(t, uti.ImplementsType(value, (*Foolish)(nil)))
 	value = "foolish"
 	ass.False(t, uti.ImplementsType(value, (*Foolish)(nil)))
-	value = FooBar(5, "five", aspect)
+	value = CreateFooBar(5, aspect)
 	ass.True(t, uti.ImplementsType(value, (*Foolish)(nil)))
 }
 
@@ -64,7 +134,7 @@ func TestIsDefined(t *tes.T) {
 	ass.False(t, uti.IsDefined(name))
 	name = ""
 	ass.False(t, uti.IsDefined(name))
-	name = "foobar"
+	name = "FooBar"
 	ass.True(t, uti.IsDefined(name))
 
 	var slice []int
@@ -118,11 +188,16 @@ func TestArrays(t *tes.T) {
 	var empty = []int{}
 	fmt.Println(uti.Format(empty))
 
-	var array = []any{nil, nil}
-	array[0] = array
-	array[1] = &Association{
-		key:   "aKey",
-		value: "aValue",
+	var pointer = &FooBar{
+		foo: 1,
+	}
+	pointer.bar = pointer
+	fmt.Println(uti.Format(pointer))
+
+	var array = make([]any, 1)
+	array[0] = &Association{
+		key:   CreateFooBar,
+		value: make(chan string, 4),
 	}
 	fmt.Println(uti.Format(array))
 
@@ -161,7 +236,7 @@ func TestMaps(t *tes.T) {
 	fmt.Println()
 }
 
-type triangle struct {
+type Triangle struct {
 	X float64
 	Y float64
 	r float64
@@ -169,59 +244,31 @@ type triangle struct {
 
 func TestStructures(t *tes.T) {
 	fmt.Println("Structures")
-	var structure = triangle{
+	var triangle = Triangle{
 		X: 3.0,
 		Y: 4.0,
 		r: 5.0,
 	}
+	fmt.Println(uti.Format(triangle))
 	fmt.Println(uti.Format(structure))
 	fmt.Println()
 }
 
-type Sequential interface {
-	AsArray() []string
+type Structured interface {
+	GetValue() int
 }
 
-type Array struct {
-	attribute []string
-}
+type Intrinsic int
 
-func (v *Array) AsArray() []string {
-	return v.attribute
-}
-
-type Association struct {
-	key   any
-	value any
-}
-
-func (v *Association) GetKey() any {
-	return v.key
-}
-
-func (v *Association) GetValue() any {
-	return v.value
-}
-
-type Map struct {
-	associations []*Association
-}
-
-func (v *Map) GetKeys() []any {
-	var size = len(v.associations)
-	var keys = make([]any, size)
-	for index, association := range v.associations {
-		keys[index] = association.GetKey()
-	}
-	return keys
-}
-
-func (v *Map) AsArray() []*Association {
-	return v.associations
+func (v Intrinsic) GetValue() int {
+	return int(v)
 }
 
 func TestPointers(t *tes.T) {
 	fmt.Println("Pointers")
+	var intrinsic Structured = Intrinsic(3)
+	fmt.Println(uti.Format(intrinsic))
+
 	var integer = 5
 	fmt.Println(uti.Format(integer))
 
@@ -231,24 +278,13 @@ func TestPointers(t *tes.T) {
 	var double = &pointer
 	fmt.Println(uti.Format(double))
 
-	var class = FooBar(2, "bar", nil)
+	fmt.Println(uti.Format(aspect))
+
+	var class = CreateFooBar(2, nil)
 	fmt.Println(uti.Format(class))
 
-	var array Sequential = &Array{
-		attribute: []string{
-			"foo",
-			"bar",
-		},
-	}
 	fmt.Println(uti.Format(array))
 
-	var map_ = &Map{
-		associations: []*Association{
-			&Association{"alpha", 1},
-			&Association{"beta", 2},
-			&Association{"gamma", 3},
-		},
-	}
 	fmt.Println(uti.Format(map_))
 	fmt.Println()
 }
