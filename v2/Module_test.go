@@ -19,6 +19,12 @@ import (
 	tes "testing"
 )
 
+type Integer int
+
+func (v Integer) GetIntrinsic() int {
+	return int(v)
+}
+
 type Sequential interface {
 	AsArray() []string
 }
@@ -90,6 +96,8 @@ type FooBar struct {
 	foo int
 	bar any
 }
+
+func (v *FooBar) GetClass() *FooBar { return v }
 
 func (v *FooBar) GetFoo() int { return v.foo }
 func (v *FooBar) GetBar() any { return v.bar }
@@ -180,6 +188,13 @@ func TestPrimitives(t *tes.T) {
 		booleanTrue:  booleanTrue,
 	}
 	fmt.Println(uti.Format(mapOfAny))
+	fmt.Println()
+}
+
+func TestIntrinsics(t *tes.T) {
+	fmt.Println("Intrinsics")
+	var integer = Integer(42)
+	fmt.Println(uti.Format(integer))
 	fmt.Println()
 }
 

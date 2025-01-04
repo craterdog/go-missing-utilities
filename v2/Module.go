@@ -604,7 +604,8 @@ func formatInstance(
 			var methodName = reflectedType.Method(index).Name
 			if sts.HasPrefix(methodName, "Get") {
 				var method = reflected.MethodByName(methodName)
-				if method.Type().NumIn() == 0 {
+				var methodType = method.Type()
+				if methodType.NumIn() == 0 && methodType.NumOut() == 1 {
 					result += formatNewline(depth)
 					var attributeName = sts.TrimPrefix(methodName, "Get")
 					var attributeValue = method.Call(
@@ -612,7 +613,13 @@ func formatInstance(
 					)[0]
 					result += attributeName
 					result += ": "
-					result += formatValue(attributeValue, depth)
+					if methodName == "GetClass" {
+						// Just format the class type to avoid any recursion.
+						var classType = methodType.Out(0)
+						result += formatType(classType)
+					} else {
+						result += formatValue(attributeValue, depth)
+					}
 				}
 			}
 		}
@@ -636,7 +643,10 @@ func formatInterface(
 	reflected ref.Value,
 	depth uint,
 ) string {
-	// Format the value behind the "any" interface.
+	// NOTE:
+	// Since a class that implements an iterface must implement all methods
+	// defined in that interface we can just format the value behind the
+	// interface.
 	var value = reflected.Elem()
 	var result = formatValue(value, depth)
 	return result
@@ -890,12 +900,24 @@ func formatStructure(
 func formatType(
 	reflectedType ref.Type,
 ) string {
-	var result = reflectedType.Name()
-	if len(result) == 0 {
-		result = reflectedType.String()
-	}
-	if result == "interface {}" {
-		result = "any"
+	var result string
+	switch reflectedType.Kind() {
+	case ref.Interface:
+		// Interfaces may be named or the "any" interface type.
+		result = reflectedType.Name()
+		if len(result) == 0 {
+			result = reflectedType.String()
+		}
+		if result == "interface {}" {
+			result = "any"
+		}
+	case ref.Pointer:
+		// Dereference the pointer an format the referenced type.
+		reflectedType = reflectedType.Elem()
+		result = reflectedType.Name()
+	default:
+		// Everything else should be a named type.
+		result = reflectedType.Name()
 	}
 	return result
 }
