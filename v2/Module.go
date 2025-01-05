@@ -452,7 +452,8 @@ func formatArray(
 			result += "..."
 		}
 	}
-	result += "](array)"
+	var typeName = formatType(reflected.Type())
+	result += "](" + typeName + ")"
 	return result
 }
 
@@ -527,14 +528,13 @@ func formatChannel(
 	result += formatNewline(depth)
 	result += "Direction: " + direction
 	result += formatNewline(depth)
-	result += "Type: " + formatType(reflectedType.Elem())
+	result += "Capacity: " + stc.Itoa(reflected.Cap())
 	result += formatNewline(depth)
 	result += "Size: " + stc.Itoa(reflected.Len())
-	result += formatNewline(depth)
-	result += "Capacity: " + stc.Itoa(reflected.Cap())
 	depth--
 	result += formatNewline(depth)
-	result += "](chan)"
+	var typeName = formatType(reflected.Type())
+	result += "](" + typeName + ")"
 	return result
 }
 
@@ -562,33 +562,9 @@ func formatFunction(
 	reflected ref.Value,
 	depth uint,
 ) string {
+	// Format the signature type rather than the function definition.
 	var reflectedType = reflected.Type()
-	var result = "func("
-	var count = reflectedType.NumIn()
-	for index := 0; index < count; index++ {
-		var argumentType = reflectedType.In(index)
-		result += formatType(argumentType)
-		if index < count-1 {
-			result += ", "
-		}
-	}
-	result += ")"
-	count = reflectedType.NumOut()
-	if count > 0 {
-		result += " "
-	}
-	if count > 0 {
-		result += "("
-		for index := 0; index < count; index++ {
-			var argumentType = reflectedType.Out(index)
-			result += formatType(argumentType)
-			if index < count-1 {
-				result += ", "
-			}
-		}
-		result += ")"
-	}
-	return result
+	return formatType(reflectedType)
 }
 
 func formatInstance(
@@ -777,7 +753,8 @@ func formatMap(
 			result += "..."
 		}
 	}
-	result += "](map)"
+	var typeName = formatType(reflected.Type())
+	result += "](" + typeName + ")"
 	return result
 }
 
@@ -820,7 +797,7 @@ func formatPointer(
 		var value = reflected.Elem()
 		result += formatValue(value, depth)
 	}
-	var typeName = formatType(reflected.Type().Elem())
+	var typeName = formatType(reflected.Type())
 	result += "](" + typeName + ")"
 	return result
 }
@@ -893,7 +870,8 @@ func formatStructure(
 	} else {
 		result += "..."
 	}
-	result += "](struct)"
+	var typeName = formatType(reflected.Type())
+	result += "](" + typeName + ")"
 	return result
 }
 
@@ -912,12 +890,69 @@ func formatType(
 			result = "any"
 		}
 	case ref.Pointer:
-		// Dereference the pointer an format the referenced type.
-		reflectedType = reflectedType.Elem()
+		// Format the pointer type recursively.
+		result = "*"
+		var referencedType = reflectedType.Elem()
+		result += formatType(referencedType)
+	case ref.UnsafePointer:
+		// Mark it as unsafe.
+		result = "<unsafe>"
+	case ref.Func:
+		// Format the function signature type recursively.
+		result = "func("
+		var count = reflectedType.NumIn()
+		for index := 0; index < count; index++ {
+			var argumentType = reflectedType.In(index)
+			result += formatType(argumentType)
+			if index < count-1 {
+				result += ", "
+			}
+		}
+		result += ")"
+		count = reflectedType.NumOut()
+		if count > 0 {
+			result += " ("
+			for index := 0; index < count; index++ {
+				var argumentType = reflectedType.Out(index)
+				result += formatType(argumentType)
+				if index < count-1 {
+					result += ", "
+				}
+			}
+			result += ")"
+		}
+	case ref.Struct:
+		// Format the structure type.
 		result = reflectedType.Name()
+		if len(result) == 0 {
+			result = "struct"
+		}
+	case ref.Chan:
+		// Format the channel type recursively.
+		result = "chan "
+		var elementType = reflectedType.Elem()
+		result += formatType(elementType)
+	case ref.Array, ref.Slice:
+		// Format the array type recursively.
+		result = "array["
+		var elementType = reflectedType.Elem()
+		result += formatType(elementType)
+		result += "]"
+	case ref.Map:
+		// Format the map type recursively.
+		result = "map["
+		var keyType = reflectedType.Key()
+		result += formatType(keyType)
+		result += ", "
+		var valueType = reflectedType.Elem()
+		result += formatType(valueType)
+		result += "]"
 	default:
-		// Everything else should be a named type.
+		// Everything else should be a named type or an intrinsic type.
 		result = reflectedType.Name()
+		if len(result) == 0 {
+			result = reflectedType.String()
+		}
 	}
 	return result
 }
