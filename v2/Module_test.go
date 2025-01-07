@@ -122,14 +122,14 @@ func (v *Polar) String() string {
 	return fmt.Sprintf("(%ve^%vi)", v.amplitude, v.phase)
 }
 
-func TestImplementsType(t *tes.T) {
-	var aspect Foolish
+func TestImplementsAspect(t *tes.T) {
+	var foolish *Foolish
 	var value any
-	ass.False(t, uti.ImplementsType(value, (*Foolish)(nil)))
-	value = "foolish"
-	ass.False(t, uti.ImplementsType(value, (*Foolish)(nil)))
-	value = CreateFooBar(5, aspect)
-	ass.True(t, uti.ImplementsType(value, (*Foolish)(nil)))
+	ass.False(t, uti.ImplementsAspect(value, foolish))
+	value = "string"
+	ass.False(t, uti.ImplementsAspect(value, foolish))
+	value = CreateFooBar(5, 42)
+	ass.True(t, uti.ImplementsAspect(value, foolish))
 }
 
 func TestIsDefined(t *tes.T) {
@@ -348,9 +348,6 @@ func TestStrings(t *tes.T) {
 	var allCaps = uti.MakeAllCaps(mixedCase)
 	ass.Equal(t, "HELLO_WORLD", allCaps)
 
-	var plural = uti.MakePlural(mixedCase)
-	ass.Equal(t, "helloWorlds", plural)
-
 	mixedCase = "HelloWorld"
 	lowerCase = uti.MakeLowerCase(mixedCase)
 	ass.Equal(t, "helloWorld", lowerCase)
@@ -364,22 +361,38 @@ func TestStrings(t *tes.T) {
 	allCaps = uti.MakeAllCaps(mixedCase)
 	ass.Equal(t, "HELLO_WORLD", allCaps)
 
-	plural = uti.MakePlural(mixedCase)
-	ass.Equal(t, "HelloWorlds", plural)
-
-	var singular = "mess"
-	plural = uti.MakePlural(singular)
-	ass.Equal(t, "messes", plural)
-
-	plural = "pixies"
-	var unchanged = uti.MakePlural(plural)
-	ass.Equal(t, plural, unchanged)
-
 	var actual = uti.ReplaceAll(template, "mixedName", "mixedValue")
 	ass.Equal(t, expected, actual)
 
 	actual = uti.ReplaceAll(template, "MixedName", "string")
 	ass.Equal(t, reserved, actual)
+
+	var plural = uti.MakePlural("cat")
+	ass.Equal(t, "cats", plural)
+
+	plural = uti.MakePlural("mess")
+	ass.Equal(t, "messes", plural)
+
+	plural = uti.MakePlural("box")
+	ass.Equal(t, "boxes", plural)
+
+	plural = uti.MakePlural("quiz")
+	ass.Equal(t, "quizzes", plural)
+
+	plural = uti.MakePlural("dish")
+	ass.Equal(t, "dishes", plural)
+
+	plural = uti.MakePlural("church")
+	ass.Equal(t, "churches", plural)
+
+	plural = uti.MakePlural("sky")
+	ass.Equal(t, "skies", plural)
+
+	plural = uti.MakePlural("wolf")
+	ass.Equal(t, "wolves", plural)
+
+	plural = uti.MakePlural("knife")
+	ass.Equal(t, "knives", plural)
 }
 
 type Interface interface {
@@ -442,9 +455,10 @@ func TestReflection(t *tes.T) {
 	ass.True(t, uti.IsUndefined(nil))
 	ass.False(t, uti.IsDefined(nil))
 
+	var target *Interface
 	var pointer Interface = &Class{}
 	ass.False(t, uti.IsUndefined(pointer))
 	ass.True(t, uti.IsDefined(pointer))
-	ass.True(t, uti.ImplementsType(pointer, (*Interface)(nil)))
-	ass.False(t, uti.ImplementsType(anything, (*Interface)(nil)))
+	ass.True(t, uti.ImplementsAspect(pointer, target))
+	ass.False(t, uti.ImplementsAspect(anything, target))
 }
