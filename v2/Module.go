@@ -412,10 +412,10 @@ func Format(
 // Reflection
 
 /*
-ImplementsAspect checks whether or not the specified value implements the
-specified aspect interface.  It can be used as follows:
+ImplementsInterface checks whether or not the specified value implements the
+specified interface.  It can be used as follows:
 
-	type MyAspect interface {
+	type MyInterface interface {
 		DoSomething()
 	}
 
@@ -425,26 +425,26 @@ func (ms *MyStruct) DoSomething() {}
 
 	func main() {
 		var myValue any = &MyStruct{}
-		var myAspect *MyAspect
-		if ImplementsAspect(myValue, myAspect) {
-			var actual MyAspect = myValue.(MyAspect)
-			fmt.Println("myValue implements MyAspect:", actual)
+		var myInterface *MyInterface
+		if ImplementsInterface(myValue, myInterface) {
+			var actual MyInterface = myValue.(MyInterface)
+			fmt.Println("myValue implements MyInterface:", actual)
 		}
 	}
 
-NOTE: The aspect argument that gets passed into the ImplementsAspect() call must
-be a pointer to the aspect since the argument is of type any.
+NOTE: The interface argument that gets passed into the ImplementsInterface() call
+must be a pointer to the interface since the argument is of type any.
 */
-func ImplementsAspect(
+func ImplementsInterface(
 	value any,
-	aspect any,
+	pointer any,
 ) bool {
 	if IsUndefined(value) {
 		return false
 	}
 	var valueType = ref.TypeOf(value)
-	var aspectInterface = ref.TypeOf(aspect).Elem()
-	return valueType.Implements(aspectInterface)
+	var interface_ = ref.TypeOf(pointer).Elem()
+	return valueType.Implements(interface_)
 }
 
 /*

@@ -107,8 +107,6 @@ var structure = FooBar{
 	bar: "private",
 }
 
-var aspect = CreateFooBar(42, "the answer")
-
 func CreatePolar(amplitude float64, phase float64) *Polar {
 	return &Polar{amplitude, phase}
 }
@@ -122,14 +120,14 @@ func (v *Polar) String() string {
 	return fmt.Sprintf("(%ve^%vi)", v.amplitude, v.phase)
 }
 
-func TestImplementsAspect(t *tes.T) {
+func TestImplementsInterface(t *tes.T) {
 	var foolish *Foolish
 	var value any
-	ass.False(t, uti.ImplementsAspect(value, foolish))
+	ass.False(t, uti.ImplementsInterface(value, foolish))
 	value = "string"
-	ass.False(t, uti.ImplementsAspect(value, foolish))
+	ass.False(t, uti.ImplementsInterface(value, foolish))
 	value = CreateFooBar(5, 42)
-	ass.True(t, uti.ImplementsAspect(value, foolish))
+	ass.True(t, uti.ImplementsInterface(value, foolish))
 }
 
 func TestIsDefined(t *tes.T) {
@@ -293,9 +291,10 @@ func TestPointers(t *tes.T) {
 	var double = &pointer
 	fmt.Println(uti.Format(double))
 
-	fmt.Println(uti.Format(aspect))
-
 	var class = CreateFooBar(2, nil)
+	fmt.Println(uti.Format(class))
+
+	class = CreateFooBar(42, "the answer")
 	fmt.Println(uti.Format(class))
 
 	fmt.Println(uti.Format(array))
@@ -459,6 +458,6 @@ func TestReflection(t *tes.T) {
 	var pointer Interface = &Class{}
 	ass.False(t, uti.IsUndefined(pointer))
 	ass.True(t, uti.IsDefined(pointer))
-	ass.True(t, uti.ImplementsAspect(pointer, target))
-	ass.False(t, uti.ImplementsAspect(anything, target))
+	ass.True(t, uti.ImplementsInterface(pointer, target))
+	ass.False(t, uti.ImplementsInterface(anything, target))
 }
