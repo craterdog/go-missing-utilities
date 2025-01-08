@@ -28,6 +28,7 @@ import (
 	cmp "math/cmplx"
 	osx "os"
 	ref "reflect"
+	run "runtime"
 	sor "sort"
 	stc "strconv"
 	sts "strings"
@@ -627,8 +628,15 @@ func formatFunction(
 	depth uint,
 ) string {
 	// Format the signature type rather than the function definition.
-	var reflectedType = reflected.Type()
-	return formatType(reflectedType)
+	var functionName = run.FuncForPC(reflected.Pointer()).Name()
+	var functionSignature = formatType(reflected.Type())
+	if IsDefined(functionName) {
+		var sections = sts.Split(functionName, ".")
+		functionName = sections[len(sections)-1]
+		functionSignature = sts.TrimPrefix(functionSignature, "func")
+		functionSignature = "func " + functionName + functionSignature
+	}
+	return functionSignature
 }
 
 func formatInstance(
