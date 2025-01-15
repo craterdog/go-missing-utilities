@@ -455,7 +455,11 @@ func TestReflection(t *tes.T) {
 	ass.False(t, uti.IsDefined(nil))
 
 	var target *Interface
-	var pointer Interface = &Class{}
+	var pointer Interface
+	ass.True(t, uti.IsUndefined(pointer))
+	ass.False(t, uti.ImplementsInterface(pointer, target))
+
+	pointer = &Class{}
 	ass.False(t, uti.IsUndefined(pointer))
 	ass.True(t, uti.IsDefined(pointer))
 	ass.True(t, uti.ImplementsInterface(pointer, target))

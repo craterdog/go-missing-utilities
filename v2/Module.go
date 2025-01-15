@@ -15,7 +15,7 @@ Package "module" defines the global functions provided by this module.  The
 functions fill is some gaps in the Go language and native libraries.  They make
 it easy to perform the things that should be simple in Go but aren't for various
 reasons.  The functions cover the following areas:
-  - Filesystem
+  - File System
   - Arrays
   - Maps
   - Strings
@@ -37,10 +37,10 @@ import (
 
 // GLOBAL FUNCTIONS
 
-// Filesystem
+// File System
 
 /*
-PathExists checks whether or not the specified filesystem path is defined.  An
+PathExists checks whether or not the specified file system path is defined.  An
 empty string or a nil pointer is considered to be undefined.
 */
 func PathExists(
@@ -58,7 +58,7 @@ func PathExists(
 
 /*
 RemovePath recursively removes all directories and files found in the specified
-filesystem path.
+file system path.
 */
 func RemovePath(
 	path string,
@@ -70,7 +70,7 @@ func RemovePath(
 }
 
 /*
-MakeDirectory creates all directories in the specified filesystem directory
+MakeDirectory creates all directories in the specified file system directory
 path.
 */
 func MakeDirectory(
@@ -84,7 +84,7 @@ func MakeDirectory(
 
 /*
 RemakeDirectory recursively removes all files and subdirectories from the
-specified filesystem directory path.
+specified file system directory path.
 */
 func RemakeDirectory(
 	directory string,
@@ -100,7 +100,7 @@ func RemakeDirectory(
 }
 
 /*
-ReadFile returns the contents of the specified file from the filesystem as a
+ReadFile returns the contents of the specified file from the file system as a
 string.
 */
 func ReadFile(
@@ -116,7 +116,7 @@ func ReadFile(
 
 /*
 WriteFile writes the specified source string as the contents of the specified
-file in the filesystem.
+file in the file system.
 */
 func WriteFile(
 	filename string,
@@ -420,9 +420,9 @@ specified interface.  It can be used as follows:
 		DoSomething()
 	}
 
-type MyStruct struct{}
+	type MyStruct struct{}
 
-func (ms *MyStruct) DoSomething() {}
+	func (v *MyStruct) DoSomething() {}
 
 	func main() {
 		var myValue any = &MyStruct{}
