@@ -11,14 +11,6 @@ For more information on this project click on the following links:
  * [project documentation](https://github.com/craterdog/go-missing-utilities/wiki)
  * [coding conventions](https://github.com/craterdog/go-development-tools/wiki/Coding-Conventions)
 
-### Getting Started
-To include the Go packages for this module use the following import statement:
-```go
-import (
-	uti "github.com/craterdog/go-missing-utilities/v4"
-)
-```
-
 ### Contributing
 Project contributors are always welcome. Check out the contributing guidelines
 [here](https://github.com/craterdog/go-missing-utilities/blob/main/.github/CONTRIBUTING.md).
