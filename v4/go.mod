@@ -1,4 +1,4 @@
-module github.com/craterdog/go-missing-utilities/v2
+module github.com/craterdog/go-missing-utilities/v4
 
 go 1.23
 
