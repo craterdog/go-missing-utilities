@@ -1,0 +1,83 @@
+/*
+................................................................................
+.    Copyright (c) 2009-2025 Crater Dog Technologies.  All Rights Reserved.    .
+................................................................................
+.  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.               .
+.                                                                              .
+.  This code is free software; you can redistribute it and/or modify it under  .
+.  the terms of The MIT License (MIT), as published by the Open Source         .
+.  Initiative. (See https://opensource.org/license/MIT)                        .
+................................................................................
+*/
+
+package module
+
+import (
+	osx "os"
+)
+
+func pathExists(
+	path string,
+) bool {
+	var _, err = osx.Stat(path)
+	if err == nil {
+		return true
+	}
+	if osx.IsNotExist(err) {
+		return false
+	}
+	panic(err)
+}
+
+func removePath(
+	path string,
+) {
+	var err = osx.RemoveAll(path)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func makeDirectory(
+	directory string,
+) {
+	var err = osx.MkdirAll(directory, 0755)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func remakeDirectory(
+	directory string,
+) {
+	var err = osx.RemoveAll(directory)
+	if err != nil {
+		panic(err)
+	}
+	err = osx.MkdirAll(directory, 0755)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func readFile(
+	filename string,
+) string {
+	var bytes, err = osx.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	var source = string(bytes)
+	return source
+}
+
+func writeFile(
+	filename string,
+	source string,
+) {
+	var bytes = []byte(source)
+	var err = osx.WriteFile(filename, bytes, 0644)
+	if err != nil {
+		panic(err)
+	}
+}
