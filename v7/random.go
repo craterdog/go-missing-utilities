@@ -32,7 +32,7 @@ func randomProbability() Probability {
 	return Probability(float64(randomOrdinal(maximum)) / float64(maximum))
 }
 
-func randomBytes(size Size) []byte {
+func randomBytes(size Cardinal) []byte {
 	var bytes = make([]byte, size)
 	_, _ = ran.Read(bytes) // This call can never fail.
 	return bytes

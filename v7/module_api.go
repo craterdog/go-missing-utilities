@@ -27,14 +27,18 @@ package module
 // GLOBAL TYPES
 
 /*
-Ordinal represents an ordinal number in the range [1..MaxUint].
+Cardinal represents a cardinal number in the range [0..MaxUint].  A cardinal
+number tells how many of something there are.
 */
-type Ordinal uint
+type Cardinal uint
 
 /*
-Size represents a cardinal number in the range [0..MaxUint].
+Ordinal represents an ordinal number in the range [1..MaxUint].  An ordinal
+number refers to an item in a sequence, first, second, third, etc.  Only early
+computer programmers would make the mistake of calling something the "zeroth"
+item in an array!
 */
-type Size uint
+type Ordinal uint
 
 /*
 Probability represents a probability in the range [0.0..1.0].
@@ -347,7 +351,7 @@ RandomBytes generates a cryptographically secure array of random bytes with the
 specified size.
 */
 func RandomBytes(
-	size Size,
+	size Cardinal,
 ) []byte {
 	return randomBytes(size)
 }
