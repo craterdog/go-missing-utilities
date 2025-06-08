@@ -18,32 +18,11 @@ reasons.  The functions cover the following areas:
   - File System
   - Composites (arrays, slices and maps)
   - Strings
-  - Codex (encoding and decoding)
-  - Random
   - Reflection
 */
 package module
 
 // GLOBAL TYPES
-
-/*
-Cardinal represents a cardinal number in the range [0..MaxUint].  A cardinal
-number tells how many of something there are.
-*/
-type Cardinal uint
-
-/*
-Ordinal represents an ordinal number in the range [1..MaxUint].  An ordinal
-number refers to an item in a sequence, first, second, third, etc.  Only early
-computer programmers would make the mistake of calling something the "zeroth"
-item in an array!
-*/
-type Ordinal uint
-
-/*
-Probability represents a probability in the range [0.0..1.0].
-*/
-type Probability float64
 
 // GLOBAL FUNCTIONS
 
@@ -252,108 +231,6 @@ func Format(
 	value any,
 ) string {
 	return format(value)
-}
-
-// Codex
-
-/*
-Base16Encode returns an encoding of the specified byte array using the following
-characters: "0123456789abcdef"
-*/
-func Base16Encode(
-	bytes []byte,
-) string {
-	return base16Encode(bytes)
-}
-
-/*
-Base16Decode returns the byte array associated with the specified base 16
-encoded string.
-*/
-func Base16Decode(
-	encoded string,
-) []byte {
-	return base16Decode(encoded)
-}
-
-/*
-Base32Encode returns an encoding of the specified byte array using the following
-characters: "0123456789ABCDFGHJKLMNPQRSTVWXYZ"
-The vowels "EIOU" are not used to avoid offensive phrases that might occur in
-the generated text.
-*/
-func Base32Encode(
-	bytes []byte,
-) string {
-	return base32Encode(bytes)
-}
-
-/*
-Base32Decode returns the byte array associated with the specified base 32
-encoded string.
-*/
-func Base32Decode(
-	encoded string,
-) []byte {
-	return base32Decode(encoded)
-}
-
-/*
-Base64Encode returns an encoding of the specified byte array using the following
-characters: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-This encoding is based on the RFC 4648 specification.
-*/
-func Base64Encode(
-	bytes []byte,
-) string {
-	return base64Encode(bytes)
-}
-
-/*
-Base64Decode returns the byte array associated with the specified base 64
-encoded string.
-*/
-func Base64Decode(
-	encoded string,
-) []byte {
-	return base64Decode(encoded)
-}
-
-// Random
-
-/*
-RandomBoolean generates a cryptographically secure random boolean.
-*/
-func RandomBoolean() bool {
-	return randomBoolean()
-}
-
-/*
-RandomOrdinal generates a cryptographically secure random ordinal number in the
-range [1..maximum].
-*/
-func RandomOrdinal(
-	maximum Ordinal,
-) Ordinal {
-	return randomOrdinal(maximum)
-}
-
-/*
-RandomProbability generates a cryptographically secure random probability in the
-range [0..1].
-*/
-func RandomProbability() Probability {
-	return randomProbability()
-}
-
-/*
-RandomBytes generates a cryptographically secure array of random bytes with the
-specified size.
-*/
-func RandomBytes(
-	size Cardinal,
-) []byte {
-	return randomBytes(size)
 }
 
 // Reflection
