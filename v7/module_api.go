@@ -49,6 +49,13 @@ func RemovePath(
 }
 
 /*
+HomeDirectory returns the home directory path for the current user.
+*/
+func HomeDirectory() string {
+	return homeDirectory()
+}
+
+/*
 MakeDirectory creates all directories in the specified file system directory
 path.
 */
@@ -113,6 +120,17 @@ func ArraysAreEqual[V comparable](
 }
 
 /*
+CombineArrays[V any] returns a new array containing the concatenation
+of the specified arrays.
+*/
+func CombineArrays[V any](
+	first []V,
+	second []V,
+) []V {
+	return combineArrays(first, second)
+}
+
+/*
 CopyMap[K comparable, V any] returns a copy of the specified map with the same
 size and key-value pairs as the specified map.  The result is not a deep copy.
 */
@@ -132,6 +150,17 @@ func MapsAreEqual[K comparable, V comparable](
 	second map[K]V,
 ) bool {
 	return mapsAreEqual(first, second)
+}
+
+/*
+CombineMaps[K comparable, V any] returns a new map containing the concatenation
+of the specified maps.
+*/
+func CombineMaps[K comparable, V any](
+	first map[K]V,
+	second map[K]V,
+) map[K]V {
+	return combineMaps(first, second)
 }
 
 // Strings

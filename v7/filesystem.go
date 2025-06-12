@@ -38,6 +38,14 @@ func removePath(
 	}
 }
 
+func homeDirectory() string {
+	directory, err := osx.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return directory + "/"
+}
+
 func makeDirectory(
 	directory string,
 ) {

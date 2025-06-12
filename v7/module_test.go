@@ -21,7 +21,7 @@ import (
 
 type Integer int
 
-func (v Integer) GetIntrinsic() int {
+func (v Integer) AsIntrinsic() int {
 	return int(v)
 }
 
@@ -222,7 +222,9 @@ func TestArrays(t *tes.T) {
 	first[1] = 5
 	ass.False(t, uti.ArraysAreEqual(first, second))
 	ass.False(t, uti.ArraysAreEqual(second, first))
-	fmt.Println(uti.Format(first))
+	var combined = uti.CombineArrays(first, second)
+	ass.Equal(t, []int{1, 5, 3, 1, 2, 3}, combined)
+	fmt.Println(uti.Format(combined))
 	fmt.Println()
 }
 
@@ -245,7 +247,8 @@ func TestMaps(t *tes.T) {
 	second = uti.CopyMap(first)
 	second["four"] = 4
 	ass.False(t, uti.MapsAreEqual(first, second))
-	fmt.Println(uti.Format(first))
+	var combined = uti.CombineMaps(first, second)
+	fmt.Println(uti.Format(combined))
 	fmt.Println()
 }
 
@@ -465,3 +468,18 @@ func TestReflection(t *tes.T) {
 	ass.True(t, uti.ImplementsInterface(pointer, target))
 	ass.False(t, uti.ImplementsInterface(anything, target))
 }
+
+/* COMMENTED OUT UNTIL NEEDED... JUST IN CASE...
+func TestFileSystem(t *tes.T) {
+	// BE VERY CAREFUL WITH THIS TEST SINCE IT USES THE HOME DIRECTORY!!!
+	var directory = uti.HomeDirectory() + "go-missing-utilities-test/"
+	var subdirectory = directory + "subdirectory/"
+	uti.MakeDirectory(subdirectory)
+	fmt.Println(subdirectory)
+	ass.True(t, uti.PathExists(subdirectory))
+	uti.RemakeDirectory(subdirectory)
+	ass.True(t, uti.PathExists(subdirectory))
+	uti.RemovePath(directory)
+	ass.False(t, uti.PathExists(directory))
+}
+*/

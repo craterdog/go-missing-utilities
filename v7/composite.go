@@ -36,6 +36,13 @@ func arraysAreEqual[V comparable](
 	return true
 }
 
+func combineArrays[V any](
+	first []V,
+	second []V,
+) []V {
+	return append(first, second...)
+}
+
 func copyMap[K comparable, V any](
 	map_ map[K]V,
 ) map[K]V {
@@ -59,4 +66,18 @@ func mapsAreEqual[K comparable, V comparable](
 		}
 	}
 	return true
+}
+
+func combineMaps[K comparable, V any](
+	first map[K]V,
+	second map[K]V,
+) map[K]V {
+	var result = make(map[K]V)
+	for key, value := range first {
+		result[key] = value
+	}
+	for key, value := range second {
+		result[key] = value
+	}
+	return result
 }
