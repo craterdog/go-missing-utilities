@@ -24,6 +24,14 @@ package module
 
 // GLOBAL TYPES
 
+/*
+Ordinal represents an ordinal number in the range [1..MaxUint].  An ordinal
+number refers to an item in a sequence, first, second, third, etc.  Only early
+computer programmers would make the mistake of calling something the "zeroth"
+item in an array!
+*/
+type Ordinal int
+
 // GLOBAL FUNCTIONS
 
 // File System
@@ -97,6 +105,40 @@ func WriteFile(
 }
 
 // Composites
+
+/*
+OrdinalToZeroBased[V any] transforms a relative (ORDINAL-based) index into
+the corresponding Go (ZERO-based) index.  The following transformation is
+performed:
+
+	[-size..-1] or [1..size] => [0..size)
+
+Notice that the specified relative index cannot be zero since zero is NOT an
+ordinal number.
+*/
+func OrdinalToZeroBased[V any](
+	array []V,
+	ordinal Ordinal,
+) int {
+	return ordinalToZeroBased(array, ordinal)
+}
+
+/*
+OrdinalToZeroBased[V any] transforms a relative (ORDINAL-based) index into
+the corresponding Go (ZERO-based) index.  The following transformation is
+performed:
+
+	[0..size) => [1..size]
+
+The transformation always chooses the positive ordinal range.
+*/
+
+func ZeroBasedToOrdinal[V any](
+	array []V,
+	index int,
+) Ordinal {
+	return zeroBasedToOrdinal(array, index)
+}
 
 /*
 CopyArray[V any] returns a copy of the specified array with the same size and

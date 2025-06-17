@@ -198,6 +198,14 @@ func TestIntrinsics(t *tes.T) {
 
 func TestArrays(t *tes.T) {
 	fmt.Println("Arrays")
+	var array = []any{1, 2, 3, 4, 5}
+	var ordinal = uti.Ordinal(-2)
+	var index = uti.OrdinalToZeroBased(array, ordinal)
+	ass.Equal(t, 3, index)
+	ordinal = uti.ZeroBasedToOrdinal(array, index)
+	ass.Equal(t, 4, int(ordinal))
+	ass.Equal(t, index, uti.OrdinalToZeroBased(array, ordinal))
+
 	var empty = []int{}
 	fmt.Println(uti.Format(empty))
 
@@ -207,7 +215,7 @@ func TestArrays(t *tes.T) {
 	pointer.bar = pointer
 	fmt.Println(uti.Format(pointer))
 
-	var array = make([]any, 1)
+	array = make([]any, 1)
 	array[0] = &Association{
 		key:   CreateFooBar,
 		value: make(chan string, 4),
