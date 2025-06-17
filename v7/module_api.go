@@ -25,12 +25,36 @@ package module
 // GLOBAL TYPES
 
 /*
-Ordinal represents an ordinal number in the range [1..MaxUint].  An ordinal
-number refers to an item in a sequence, first, second, third, etc.  Only early
-computer programmers would make the mistake of calling something the "zeroth"
-item in an array!
+Cardinal is a constrained type representing a cardinal number in the range
+[0..MaxUint].  A cardinal number tells how many of something there are.
 */
-type Ordinal int
+type Cardinal uint
+
+/*
+Ordinal is a constrained type representing an ordinal number in the range
+[1..MaxUint].  An ordinal number refers to an item in a sequence: first,
+second, third, etc.
+*/
+type Ordinal uint
+
+/*
+Index is a constrained type representing a relative positive (or negative)
+ordinal index of a value in a sequence.  The indices are ordinal rather than
+zero-based which never really made sense except for pointer offsets.  What is
+the "zeroth value" anyway?  It's the "first value", right?  So we start a fresh...
+
+This relative indexing approach allows for positive indices starting at the
+beginning of a sequence—and negative indices starting at the end of the
+sequence, as follows:
+
+	    1           2           3             N
+	[value 1] . [value 2] . [value 3] ... [value N]
+	   -N        -(N-1)      -(N-2)          -1
+
+Notice that because the indices are ordinal based, the positive and negative
+indices are symmetrical.  A relative index can NEVER be zero.
+*/
+type Index int
 
 // GLOBAL FUNCTIONS
 
@@ -107,37 +131,35 @@ func WriteFile(
 // Composites
 
 /*
-OrdinalToZeroBased[V any] transforms a relative (ORDINAL-based) index into
-the corresponding Go (ZERO-based) index.  The following transformation is
-performed:
+RelativeToZeroBased[V any] transforms a relative (ordinal-based) index into
+the corresponding zero-based index.  The following transformation is performed:
 
 	[-size..-1] or [1..size] => [0..size)
 
 Notice that the specified relative index cannot be zero since zero is NOT an
 ordinal number.
 */
-func OrdinalToZeroBased[V any](
+func RelativeToZeroBased[V any](
 	array []V,
-	ordinal Ordinal,
+	relative Index,
 ) int {
-	return ordinalToZeroBased(array, ordinal)
+	return relativeToZeroBased(array, relative)
 }
 
 /*
-OrdinalToZeroBased[V any] transforms a relative (ORDINAL-based) index into
-the corresponding Go (ZERO-based) index.  The following transformation is
-performed:
+ZeroBasedToRelative[V any] transforms a zero-based index into the corresponding
+relative (ordinal-based) index.  The following transformation is performed:
 
 	[0..size) => [1..size]
 
 The transformation always chooses the positive ordinal range.
 */
 
-func ZeroBasedToOrdinal[V any](
+func ZeroBasedToRelative[V any](
 	array []V,
-	index int,
-) Ordinal {
-	return zeroBasedToOrdinal(array, index)
+	zeroBased int,
+) Index {
+	return zeroBasedToRelative(array, zeroBased)
 }
 
 /*

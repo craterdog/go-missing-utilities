@@ -16,59 +16,59 @@ import (
 	fmt "fmt"
 )
 
-func ordinalToZeroBased[V any](
+func relativeToZeroBased[V any](
 	array []V,
-	ordinal Ordinal,
+	relative Index,
 ) int {
-	var index int
-	var size = Ordinal(len(array))
+	var zeroBased int
+	var size = Index(len(array))
 	switch {
 	case size == 0:
 		// The Array is empty.
 		panic("Cannot index an empty Array.")
-	case ordinal == 0:
-		// Zero is not an ordinal.
+	case relative == 0:
+		// Zero is not a relative index.
 		panic("Indices must be positive or negative ordinals, not zero.")
-	case ordinal < -size || ordinal > size:
+	case relative < -size || relative > size:
 		// The index is outside the bounds of the specified range.
 		var message = fmt.Sprintf(
 			"The specified index is outside the allowed ranges [-%v..-1] and [1..%v]: %v",
 			size,
 			size,
-			ordinal)
+			relative)
 		panic(message)
-	case ordinal < 0:
+	case relative < 0:
 		// Convert a negative index.
-		index = int(ordinal + size)
-	case ordinal > 0:
+		zeroBased = int(relative + size)
+	case relative > 0:
 		// Convert a positive index.
-		index = int(ordinal - 1)
+		zeroBased = int(relative - 1)
 	}
-	return index
+	return zeroBased
 }
 
-func zeroBasedToOrdinal[V any](
+func zeroBasedToRelative[V any](
 	array []V,
-	index int,
-) Ordinal {
-	var ordinal Ordinal
+	zeroBased int,
+) Index {
+	var relative Index
 	var size = len(array)
 	switch {
 	case size == 0:
 		// The Array is empty.
 		panic("Cannot index an empty Array.")
-	case index < 0 || index >= size:
+	case zeroBased < 0 || zeroBased >= size:
 		// The index is outside the bounds of the array.
 		var message = fmt.Sprintf(
 			"The specified index is outside the allowed range [0..%v): %v",
 			size,
-			index,
+			zeroBased,
 		)
 		panic(message)
 	default:
-		ordinal = Ordinal(index + 1)
+		relative = Index(zeroBased + 1)
 	}
-	return ordinal
+	return relative
 }
 
 func copyArray[V any](

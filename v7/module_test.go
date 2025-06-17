@@ -199,12 +199,12 @@ func TestIntrinsics(t *tes.T) {
 func TestArrays(t *tes.T) {
 	fmt.Println("Arrays")
 	var array = []any{1, 2, 3, 4, 5}
-	var ordinal = uti.Ordinal(-2)
-	var index = uti.OrdinalToZeroBased(array, ordinal)
-	ass.Equal(t, 3, index)
-	ordinal = uti.ZeroBasedToOrdinal(array, index)
-	ass.Equal(t, 4, int(ordinal))
-	ass.Equal(t, index, uti.OrdinalToZeroBased(array, ordinal))
+	var relative = uti.Index(-2)
+	var zeroBased = uti.RelativeToZeroBased(array, relative)
+	ass.Equal(t, 3, zeroBased)
+	relative = uti.ZeroBasedToRelative(array, zeroBased)
+	ass.Equal(t, 4, int(relative))
+	ass.Equal(t, zeroBased, uti.RelativeToZeroBased(array, relative))
 
 	var empty = []int{}
 	fmt.Println(uti.Format(empty))
