@@ -16,49 +16,58 @@ import (
 	fmt "fmt"
 )
 
-func relativeToZeroBased[V any](
-	array []V,
+func relativeToZeroBased(
 	relative Index,
+	size Cardinal,
 ) int {
 	var zeroBased int
-	var size = Index(len(array))
+	var relativeAsInt = int(relative)
+	var sizeAsInt = int(size)
 	switch {
 	case size == 0:
-		// The Array is empty.
-		panic("Cannot index an empty Array.")
+		var message = fmt.Sprintf(
+			"The specified size cannot be less than one: %v",
+			size,
+		)
+		panic(message)
 	case relative == 0:
-		// Zero is not a relative index.
-		panic("Indices must be positive or negative ordinals, not zero.")
-	case relative < -size || relative > size:
-		// The index is outside the bounds of the specified range.
+		var message = fmt.Sprintf(
+			"Relative indices must be positive or negative ordinals, not zero: %v",
+			relative,
+		)
+		panic(message)
+	case relativeAsInt < -sizeAsInt || relativeAsInt > sizeAsInt:
 		var message = fmt.Sprintf(
 			"The specified index is outside the allowed ranges [-%v..-1] and [1..%v]: %v",
 			size,
 			size,
-			relative)
+			relative,
+		)
 		panic(message)
 	case relative < 0:
 		// Convert a negative index.
-		zeroBased = int(relative + size)
+		zeroBased = relativeAsInt + sizeAsInt
 	case relative > 0:
 		// Convert a positive index.
-		zeroBased = int(relative - 1)
+		zeroBased = relativeAsInt - 1
 	}
 	return zeroBased
 }
 
-func zeroBasedToRelative[V any](
-	array []V,
+func zeroBasedToRelative(
 	zeroBased int,
+	size Cardinal,
 ) Index {
 	var relative Index
-	var size = len(array)
+	var sizeAsInt = int(size)
 	switch {
 	case size == 0:
-		// The Array is empty.
-		panic("Cannot index an empty Array.")
-	case zeroBased < 0 || zeroBased >= size:
-		// The index is outside the bounds of the array.
+		var message = fmt.Sprintf(
+			"The specified size cannot be less than one: %v",
+			size,
+		)
+		panic(message)
+	case zeroBased < 0 || zeroBased >= sizeAsInt:
 		var message = fmt.Sprintf(
 			"The specified index is outside the allowed range [0..%v): %v",
 			size,

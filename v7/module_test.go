@@ -196,16 +196,19 @@ func TestIntrinsics(t *tes.T) {
 	fmt.Println()
 }
 
+func TestRelativeIndexing(t *tes.T) {
+	fmt.Println("Indexing")
+	var size = uti.Cardinal(5)
+	var relative = uti.Index(-2)
+	var zeroBased = uti.RelativeToZeroBased(relative, size)
+	ass.Equal(t, 3, zeroBased)
+	relative = uti.ZeroBasedToRelative(zeroBased, size)
+	ass.Equal(t, 4, int(relative))
+	ass.Equal(t, zeroBased, uti.RelativeToZeroBased(relative, size))
+}
+
 func TestArrays(t *tes.T) {
 	fmt.Println("Arrays")
-	var array = []any{1, 2, 3, 4, 5}
-	var relative = uti.Index(-2)
-	var zeroBased = uti.RelativeToZeroBased(array, relative)
-	ass.Equal(t, 3, zeroBased)
-	relative = uti.ZeroBasedToRelative(array, zeroBased)
-	ass.Equal(t, 4, int(relative))
-	ass.Equal(t, zeroBased, uti.RelativeToZeroBased(array, relative))
-
 	var empty = []int{}
 	fmt.Println(uti.Format(empty))
 
@@ -215,7 +218,7 @@ func TestArrays(t *tes.T) {
 	pointer.bar = pointer
 	fmt.Println(uti.Format(pointer))
 
-	array = make([]any, 1)
+	var array = make([]any, 1)
 	array[0] = &Association{
 		key:   CreateFooBar,
 		value: make(chan string, 4),

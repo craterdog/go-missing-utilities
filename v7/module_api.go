@@ -131,23 +131,23 @@ func WriteFile(
 // Composites
 
 /*
-RelativeToZeroBased[V any] transforms a relative (ordinal-based) index into
-the corresponding zero-based index.  The following transformation is performed:
+RelativeToZeroBased transforms a relative (ordinal-based) index into the
+corresponding zero-based index.  The following transformation is performed:
 
 	[-size..-1] or [1..size] => [0..size)
 
 Notice that the specified relative index cannot be zero since zero is NOT an
 ordinal number.
 */
-func RelativeToZeroBased[V any](
-	array []V,
+func RelativeToZeroBased(
 	relative Index,
+	size Cardinal,
 ) int {
-	return relativeToZeroBased(array, relative)
+	return relativeToZeroBased(relative, size)
 }
 
 /*
-ZeroBasedToRelative[V any] transforms a zero-based index into the corresponding
+ZeroBasedToRelative transforms a zero-based index into the corresponding
 relative (ordinal-based) index.  The following transformation is performed:
 
 	[0..size) => [1..size]
@@ -155,11 +155,11 @@ relative (ordinal-based) index.  The following transformation is performed:
 The transformation always chooses the positive ordinal range.
 */
 
-func ZeroBasedToRelative[V any](
-	array []V,
+func ZeroBasedToRelative(
 	zeroBased int,
+	size Cardinal,
 ) Index {
-	return zeroBasedToRelative(array, zeroBased)
+	return zeroBasedToRelative(zeroBased, size)
 }
 
 /*
