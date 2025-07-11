@@ -108,6 +108,16 @@ func RemakeDirectory(
 }
 
 /*
+ReadDirectory returns an array containing the filenames of the files in the
+specified directory.
+*/
+func ReadDirectory(
+	directory string,
+) []string {
+	return readDirectory(directory)
+}
+
+/*
 ReadFile returns the contents of the specified file from the file system as a
 string.
 */

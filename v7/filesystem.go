@@ -14,6 +14,7 @@ package module
 
 import (
 	osx "os"
+	sts "strings"
 )
 
 func pathExists(
@@ -66,6 +67,29 @@ func remakeDirectory(
 	if err != nil {
 		panic(err)
 	}
+}
+
+func readDirectory(
+	directory string,
+) []string {
+	if !sts.HasSuffix(directory, "/") {
+		directory += "/"
+	}
+	var files, err = osx.ReadDir(directory)
+	if err != nil {
+		panic(err)
+	}
+	var filenames = make([]string, 0, len(files))
+	for _, file := range files {
+		var filename = file.Name()
+		if sts.HasPrefix(filename, ".") {
+			// Skip hiddend files.
+			continue
+		}
+		filename = directory + filename
+		filenames = append(filenames, filename)
+	}
+	return filenames
 }
 
 func readFile(

@@ -483,10 +483,14 @@ func TestReflection(t *tes.T) {
 /* COMMENTED OUT UNTIL NEEDED... JUST IN CASE...
 func TestFileSystem(t *tes.T) {
 	// BE VERY CAREFUL WITH THIS TEST SINCE IT USES THE HOME DIRECTORY!!!
-	var directory = uti.HomeDirectory() + "go-missing-utilities-test/"
+	var directory = uti.HomeDirectory()
+	var filenames = uti.ReadDirectory(directory)
+	for _, filename := range filenames {
+		fmt.Println(`"` + filename + `"`)
+	}
+	directory += "go-missing-utilities-test/"
 	var subdirectory = directory + "subdirectory/"
 	uti.MakeDirectory(subdirectory)
-	fmt.Println(subdirectory)
 	ass.True(t, uti.PathExists(subdirectory))
 	uti.RemakeDirectory(subdirectory)
 	ass.True(t, uti.PathExists(subdirectory))
