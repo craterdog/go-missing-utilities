@@ -86,7 +86,6 @@ func readDirectory(
 			// Skip hiddend files.
 			continue
 		}
-		filename = directory + filename
 		filenames = append(filenames, filename)
 	}
 	return filenames
