@@ -494,6 +494,7 @@ func TestFileSystem(t *tes.T) {
 	ass.True(t, uti.PathExists(subdirectory))
 	uti.RemakeDirectory(subdirectory)
 	ass.True(t, uti.PathExists(subdirectory))
+	ass.Equal(t, len(uti.ReadDirectory(subdirectory)), 0)
 	uti.RemovePath(directory)
 	ass.False(t, uti.PathExists(directory))
 }
