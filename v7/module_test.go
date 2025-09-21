@@ -154,7 +154,7 @@ func TestIsDefined(t *tes.T) {
 var booleanFalse = false
 var booleanTrue = true
 var byte16 = byte(16)
-var rune1024 = rune(1024)
+var runeLOL = rune(128514)
 var uint85 = uint8(5)
 var int13 = 13
 var float = 1.23e10
@@ -166,7 +166,7 @@ func TestPrimitives(t *tes.T) {
 	fmt.Println("Primitives")
 	fmt.Println(uti.Format(booleanFalse))
 	fmt.Println(uti.Format(byte16))
-	fmt.Println(uti.Format(rune1024))
+	fmt.Println(uti.Format(runeLOL))
 	fmt.Println(uti.Format(uint85))
 	fmt.Println(uti.Format(int13))
 	fmt.Println(uti.Format(float))
@@ -176,7 +176,7 @@ func TestPrimitives(t *tes.T) {
 	var mapOfAny = map[any]any{
 		booleanFalse: booleanFalse,
 		byte16:       byte16,
-		rune1024:     rune1024,
+		runeLOL:      runeLOL,
 		complex5i:    complex5i,
 		uint85:       uint85,
 		int13:        int13,
@@ -198,13 +198,13 @@ func TestIntrinsics(t *tes.T) {
 
 func TestRelativeIndexing(t *tes.T) {
 	fmt.Println("Indexing")
-	var size = uti.Cardinal(5)
-	var relative = uti.Index(-2)
-	var zeroBased = uti.RelativeToZeroBased(relative, size)
-	ass.Equal(t, 3, zeroBased)
-	relative = uti.ZeroBasedToRelative(zeroBased, size)
-	ass.Equal(t, 4, int(relative))
-	ass.Equal(t, zeroBased, uti.RelativeToZeroBased(relative, size))
+	var size uint = 5
+	var relative = -2
+	var cardinal = uti.RelativeToCardinal(relative, size)
+	ass.Equal(t, 3, cardinal)
+	relative = uti.CardinalToRelative(cardinal, size)
+	ass.Equal(t, 4, relative)
+	ass.Equal(t, cardinal, uti.RelativeToCardinal(relative, size))
 }
 
 func TestArrays(t *tes.T) {
@@ -282,18 +282,12 @@ func TestStructures(t *tes.T) {
 }
 
 type Structured interface {
-	GetValue() int
-}
-
-type Intrinsic int
-
-func (v Intrinsic) GetValue() int {
-	return int(v)
+	AsIntrinsic() int
 }
 
 func TestPointers(t *tes.T) {
 	fmt.Println("Pointers")
-	var intrinsic Structured = Intrinsic(3)
+	var intrinsic Structured = Integer(3)
 	fmt.Println(uti.Format(intrinsic))
 
 	var integer = 5

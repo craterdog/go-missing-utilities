@@ -16,13 +16,10 @@ import (
 	fmt "fmt"
 )
 
-func relativeToZeroBased(
-	relative Index,
-	size Cardinal,
+func relativeToCardinal(
+	relative int,
+	size uint,
 ) int {
-	var zeroBased int
-	var relativeAsInt = int(relative)
-	var sizeAsInt = int(size)
 	switch {
 	case size == 0:
 		var message = fmt.Sprintf(
@@ -36,7 +33,7 @@ func relativeToZeroBased(
 			relative,
 		)
 		panic(message)
-	case relativeAsInt < -sizeAsInt || relativeAsInt > sizeAsInt:
+	case relative < -int(size) || relative > int(size):
 		var message = fmt.Sprintf(
 			"The specified index is outside the allowed ranges [-%v..-1] and [1..%v]: %v",
 			size,
@@ -45,21 +42,20 @@ func relativeToZeroBased(
 		)
 		panic(message)
 	case relative < 0:
-		// Convert a negative index.
-		zeroBased = relativeAsInt + sizeAsInt
+		// Convert a negative relative index.
+		return relative + int(size)
 	case relative > 0:
-		// Convert a positive index.
-		zeroBased = relativeAsInt - 1
+		// Convert a positive relative index.
+		return relative - 1
+	default:
+		return -1
 	}
-	return zeroBased
 }
 
-func zeroBasedToRelative(
-	zeroBased int,
-	size Cardinal,
-) Index {
-	var relative Index
-	var sizeAsInt = int(size)
+func cardinalToRelative(
+	cardinal int,
+	size uint,
+) int {
 	switch {
 	case size == 0:
 		var message = fmt.Sprintf(
@@ -67,17 +63,16 @@ func zeroBasedToRelative(
 			size,
 		)
 		panic(message)
-	case zeroBased < 0 || zeroBased >= sizeAsInt:
+	case cardinal >= int(size):
 		var message = fmt.Sprintf(
 			"The specified index is outside the allowed range [0..%v): %v",
 			size,
-			zeroBased,
+			cardinal,
 		)
 		panic(message)
 	default:
-		relative = Index(zeroBased + 1)
+		return cardinal + 1
 	}
-	return relative
 }
 
 func copyArray[V any](

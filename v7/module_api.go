@@ -24,38 +24,6 @@ package module
 
 // GLOBAL TYPES
 
-/*
-Cardinal is a constrained type representing a cardinal number in the range
-[0..MaxUint].  A cardinal number tells how many of something there are.
-*/
-type Cardinal uint
-
-/*
-Ordinal is a constrained type representing an ordinal number in the range
-[1..MaxUint].  An ordinal number refers to an item in a sequence: first,
-second, third, etc.
-*/
-type Ordinal uint
-
-/*
-Index is a constrained type representing a relative positive (or negative)
-ordinal index of a value in a sequence.  The indices are ordinal rather than
-zero-based which never really made sense except for pointer offsets.  What is
-the "zeroth value" anyway?  It's the "first value", right?  So we start a fresh...
-
-This relative indexing approach allows for positive indices starting at the
-beginning of a sequence—and negative indices starting at the end of the
-sequence, as follows:
-
-	    1           2           3             N
-	[value 1] . [value 2] . [value 3] ... [value N]
-	   -N        -(N-1)      -(N-2)          -1
-
-Notice that because the indices are ordinal based, the positive and negative
-indices are symmetrical.  A relative index can NEVER be zero.
-*/
-type Index int
-
 // GLOBAL FUNCTIONS
 
 // File System
@@ -141,7 +109,24 @@ func WriteFile(
 // Composites
 
 /*
-RelativeToZeroBased transforms a relative (ordinal-based) index into the
+Relative indexing allows an index to be a relative positive (or negative)
+ordinal index of a value in a sequence.  The indices are ordinal rather than
+cardinal (zero-based) which never really made sense except for pointer offsets.
+What is the "zeroth value" in a sequence anyway?  It's the "first value",
+right?  So we start a fresh...
+
+The relative indexing approach allows for positive indices starting at the
+beginning of a sequence—and negative indices starting at the end of the
+sequence, as follows:
+
+	    1           2           3             N
+	[value 1] . [value 2] . [value 3] ... [value N]
+	   -N        -(N-1)      -(N-2)          -1
+
+Notice that because the indices are ordinal based, the positive and negative
+indices are symmetrical.  A relative index can NEVER be zero.
+
+RelativeToCardinal transforms a relative (ordinal-based) index into the
 corresponding zero-based index.  The following transformation is performed:
 
 	[-size..-1] or [1..size] => [0..size)
@@ -149,27 +134,28 @@ corresponding zero-based index.  The following transformation is performed:
 Notice that the specified relative index cannot be zero since zero is NOT an
 ordinal number.
 */
-func RelativeToZeroBased(
-	relative Index,
-	size Cardinal,
+func RelativeToCardinal(
+	relative int,
+	size uint,
 ) int {
-	return relativeToZeroBased(relative, size)
+	return relativeToCardinal(relative, size)
 }
 
 /*
-ZeroBasedToRelative transforms a zero-based index into the corresponding
-relative (ordinal-based) index.  The following transformation is performed:
+CardinalToRelative transforms a cardinal (zero-based) index into the
+corresponding relative (ordinal-based) index.  The following transformation
+is performed:
 
 	[0..size) => [1..size]
 
 The transformation always chooses the positive ordinal range.
 */
 
-func ZeroBasedToRelative(
-	zeroBased int,
-	size Cardinal,
-) Index {
-	return zeroBasedToRelative(zeroBased, size)
+func CardinalToRelative(
+	cardinal int,
+	size uint,
+) int {
+	return cardinalToRelative(cardinal, size)
 }
 
 /*
