@@ -210,6 +210,7 @@ func TestRelativeIndexing(t *tes.T) {
 func TestArrays(t *tes.T) {
 	fmt.Println("Arrays")
 	var empty = []int{}
+	ass.Equal(t, uint(0), uti.ArraySize(empty))
 	fmt.Println(uti.Format(empty))
 
 	var pointer = &FooBar{
@@ -223,6 +224,7 @@ func TestArrays(t *tes.T) {
 		key:   CreateFooBar,
 		value: make(chan string, 4),
 	}
+	ass.Equal(t, uint(1), uti.ArraySize(array))
 	fmt.Println(uti.Format(array))
 
 	var first = []int{1, 2, 3}
@@ -242,6 +244,7 @@ func TestArrays(t *tes.T) {
 func TestMaps(t *tes.T) {
 	fmt.Println("Maps")
 	var empty = map[string]int{}
+	ass.Equal(t, uint(0), uti.MapSize(empty))
 	fmt.Println(uti.Format(empty))
 
 	var first = map[string]int{
@@ -249,6 +252,7 @@ func TestMaps(t *tes.T) {
 		"two":   2,
 		"three": 3,
 	}
+	ass.Equal(t, uint(3), uti.MapSize(first))
 	var second = uti.CopyMap(first)
 	ass.True(t, uti.MapsAreEqual(first, first))
 	ass.True(t, uti.MapsAreEqual(first, second))

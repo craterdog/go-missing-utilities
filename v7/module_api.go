@@ -159,6 +159,15 @@ func CardinalToRelative(
 }
 
 /*
+ArraySize[V any] returns the current size of the specified array.
+*/
+func ArraySize[V any](
+	array []V,
+) uint {
+	return arraySize(array)
+}
+
+/*
 CopyArray[V any] returns a copy of the specified array with the same size and
 elements as the specified array.  The result is not a deep copy.
 */
@@ -188,6 +197,15 @@ func CombineArrays[V any](
 	second []V,
 ) []V {
 	return combineArrays(first, second)
+}
+
+/*
+MapSize[K comparable, V any] returns the current size of the specified map.
+*/
+func MapSize[K comparable, V any](
+	map_ map[K]V,
+) uint {
+	return mapSize(map_)
 }
 
 /*

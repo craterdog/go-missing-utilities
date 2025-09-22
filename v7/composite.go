@@ -75,6 +75,12 @@ func cardinalToRelative(
 	}
 }
 
+func arraySize[V any](
+	array []V,
+) uint {
+	return uint(len(array))
+}
+
 func copyArray[V any](
 	array []V,
 ) []V {
@@ -104,6 +110,12 @@ func combineArrays[V any](
 	second []V,
 ) []V {
 	return append(first, second...)
+}
+
+func mapSize[K comparable, V any](
+	map_ map[K]V,
+) uint {
+	return uint(len(map_))
 }
 
 func copyMap[K comparable, V any](
