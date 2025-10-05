@@ -39,6 +39,16 @@ func removePath(
 	}
 }
 
+func renamePath(
+	oldPath string,
+	newPath string,
+) {
+	var err = osx.Rename(oldPath, newPath)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func homeDirectory() string {
 	directory, err := osx.UserHomeDir()
 	if err != nil {

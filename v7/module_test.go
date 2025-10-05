@@ -493,6 +493,10 @@ func TestFileSystem(t *tes.T) {
 	uti.RemakeDirectory(subdirectory)
 	ass.True(t, uti.PathExists(subdirectory))
 	ass.Equal(t, len(uti.ReadDirectory(subdirectory)), 0)
+	var newdirectory = directory + "newdirectory/"
+	uti.RenamePath(subdirectory, newdirectory)
+	ass.True(t, uti.PathExists(newdirectory))
+	ass.Equal(t, len(uti.ReadDirectory(newdirectory)), 0)
 	uti.RemovePath(directory)
 	ass.False(t, uti.PathExists(directory))
 }

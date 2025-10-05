@@ -26,86 +26,6 @@ package module
 
 // GLOBAL FUNCTIONS
 
-// File System
-
-/*
-PathExists checks whether or not the specified file system path is defined.  An
-empty string or a nil pointer is considered to be undefined.
-*/
-func PathExists(
-	path string,
-) bool {
-	return pathExists(path)
-}
-
-/*
-RemovePath recursively removes all directories and files found in the specified
-file system path.
-*/
-func RemovePath(
-	path string,
-) {
-	removePath(path)
-}
-
-/*
-HomeDirectory returns the home directory path for the current user.
-*/
-func HomeDirectory() string {
-	return homeDirectory()
-}
-
-/*
-MakeDirectory creates all directories in the specified file system directory
-path.
-*/
-func MakeDirectory(
-	directory string,
-) {
-	makeDirectory(directory)
-}
-
-/*
-RemakeDirectory recursively removes all files and subdirectories from the
-specified file system directory path.
-*/
-func RemakeDirectory(
-	directory string,
-) {
-	remakeDirectory(directory)
-}
-
-/*
-ReadDirectory returns an array containing the filenames of the files in the
-specified directory.
-*/
-func ReadDirectory(
-	directory string,
-) []string {
-	return readDirectory(directory)
-}
-
-/*
-ReadFile returns the contents of the specified file from the file system as a
-string.
-*/
-func ReadFile(
-	filename string,
-) string {
-	return readFile(filename)
-}
-
-/*
-WriteFile writes the specified source string as the contents of the specified
-file in the file system.
-*/
-func WriteFile(
-	filename string,
-	source string,
-) {
-	writeFile(filename, source)
-}
-
 // Composites
 
 /*
@@ -338,6 +258,96 @@ func Format(
 	value any,
 ) string {
 	return format(value)
+}
+
+// File System
+
+/*
+PathExists checks whether or not the specified file system path is defined.  An
+empty string or a nil pointer is considered to be undefined.
+*/
+func PathExists(
+	path string,
+) bool {
+	return pathExists(path)
+}
+
+/*
+RemovePath recursively removes all directories and files found in the specified
+file system path.
+*/
+func RemovePath(
+	path string,
+) {
+	removePath(path)
+}
+
+/*
+RenamePath renames an old file system path to a new one.
+*/
+func RenamePath(
+	oldPath string,
+	newPath string,
+) {
+	renamePath(oldPath, newPath)
+}
+
+/*
+HomeDirectory returns the home directory path for the current user.
+*/
+func HomeDirectory() string {
+	return homeDirectory()
+}
+
+/*
+MakeDirectory creates all directories in the specified file system directory
+path.
+*/
+func MakeDirectory(
+	directory string,
+) {
+	makeDirectory(directory)
+}
+
+/*
+RemakeDirectory recursively removes all files and subdirectories from the
+specified file system directory path.
+*/
+func RemakeDirectory(
+	directory string,
+) {
+	remakeDirectory(directory)
+}
+
+/*
+ReadDirectory returns an array containing the filenames of the files in the
+specified directory.
+*/
+func ReadDirectory(
+	directory string,
+) []string {
+	return readDirectory(directory)
+}
+
+/*
+ReadFile returns the contents of the specified file from the file system as a
+string.
+*/
+func ReadFile(
+	filename string,
+) string {
+	return readFile(filename)
+}
+
+/*
+WriteFile writes the specified source string as the contents of the specified
+file in the file system.
+*/
+func WriteFile(
+	filename string,
+	source string,
+) {
+	writeFile(filename, source)
 }
 
 // Reflection
