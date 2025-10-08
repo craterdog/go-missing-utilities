@@ -4,7 +4,8 @@
 
 ### Overview
 This project provides some useful utilities that are missing from the standard
-Go libraries.
+Go libraries.  It provides functions that help with file system access, data
+structure manipulation, string manipulation, and reflection.
 
 ### Quick Links
 For more information on this project click on the following links:
