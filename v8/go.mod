@@ -1,4 +1,4 @@
-module github.com/craterdog/go-missing-utilities/v7
+module github.com/craterdog/go-missing-utilities/v8
 
 go 1.25
 

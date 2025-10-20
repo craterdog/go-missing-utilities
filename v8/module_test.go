@@ -14,7 +14,7 @@ package module_test
 
 import (
 	fmt "fmt"
-	uti "github.com/craterdog/go-missing-utilities/v7"
+	uti "github.com/craterdog/go-missing-utilities/v8"
 	ass "github.com/stretchr/testify/assert"
 	tes "testing"
 )
