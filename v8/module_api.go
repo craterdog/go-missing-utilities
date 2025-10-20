@@ -18,6 +18,8 @@ reasons.  The functions cover the following areas:
   - File System
   - Composites (arrays, slices and maps)
   - Strings
+  - Codex
+  - Random
   - Reflection
 */
 package module
@@ -348,6 +350,66 @@ func WriteFile(
 	source string,
 ) {
 	writeFile(filename, source)
+}
+
+// Codex
+
+func Base16Encode(
+	bytes []byte,
+) string {
+	return base16Encode(bytes)
+}
+
+func Base16Decode(
+	encoded string,
+) []byte {
+	return base16Decode(encoded)
+}
+
+func Base32Encode(
+	bytes []byte,
+) string {
+	return base32Encode(bytes)
+}
+
+func Base32Decode(
+	encoded string,
+) []byte {
+	return base32Decode(encoded)
+}
+
+func Base64Encode(
+	bytes []byte,
+) string {
+	return base64Encode(bytes)
+}
+
+func Base64Decode(
+	encoded string,
+) []byte {
+	return base64Decode(encoded)
+}
+
+// Random
+
+func RandomBoolean() bool {
+	return randomBoolean()
+}
+
+func RandomOrdinal(
+	maximum uint,
+) uint {
+	return randomOrdinal(maximum)
+}
+
+func RandomProbability() float64 {
+	return randomProbability()
+}
+
+func RandomBytes(
+	size uint,
+) []byte {
+	return randomBytes(size)
 }
 
 // Reflection
