@@ -4,8 +4,13 @@
 
 ### Overview
 This project provides some useful utilities that are missing from the standard
-Go libraries.  It provides functions that help with file system access, data
-structure manipulation, string manipulation, and reflection.
+Go libraries.  It provides functions that help with the following areas:
+ * Strings
+ * Arrays and Maps
+ * Filesystem
+ * Random Numbers
+ * Encoding/Decoding
+ * Reflection
 
 ### Quick Links
 For more information on this project click on the following links:
