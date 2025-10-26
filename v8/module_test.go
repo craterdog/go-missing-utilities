@@ -229,6 +229,11 @@ func TestArrays(t *tes.T) {
 
 	var first = []int{1, 2, 3}
 	var second = uti.CopyArray(first)
+	var iterator = uti.Iterator(first)
+	for iterator.HasNext() {
+		var item = iterator.GetNext()
+		fmt.Printf("Item: %v\n", item)
+	}
 	ass.True(t, uti.ArraysAreEqual(first, first))
 	ass.True(t, uti.ArraysAreEqual(first, second))
 	ass.True(t, uti.ArraysAreEqual(second, first))

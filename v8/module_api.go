@@ -26,6 +26,25 @@ package module
 
 // GLOBAL TYPES
 
+/*
+IteratorLike[V any] is an interface that declares the complete set of methods
+that must be supported by each iterator.
+*/
+type IteratorLike[V any] interface {
+	IsEmpty() bool
+	ToStart()
+	ToEnd()
+	HasPrevious() bool
+	GetPrevious() V
+	HasNext() bool
+	GetNext() V
+	GetSize() uint
+	GetSlot() uint
+	SetSlot(
+		slot uint,
+	)
+}
+
 // GLOBAL FUNCTIONS
 
 // Composites
@@ -78,6 +97,18 @@ func CardinalToRelative(
 	size uint,
 ) int {
 	return cardinalToRelative(cardinal, size)
+}
+
+/*
+Iterator[V any] returns an iterator over the specified array.  The
+iterator moves forwards or backwards over the array landing in the slots between
+the items in the array.  From a given slot the previous and next items are
+accessible to the iterator.
+*/
+func Iterator[V any](
+	array []V,
+) IteratorLike[V] {
+	return createIterator[V](array)
 }
 
 /*

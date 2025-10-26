@@ -16,6 +16,8 @@ import (
 	fmt "fmt"
 )
 
+// Indexing
+
 func relativeToCardinal(
 	relative int,
 	size uint,
@@ -75,6 +77,81 @@ func cardinalToRelative(
 	}
 }
 
+// Iterators
+
+type iterator_[V any] struct {
+	slot_   uint
+	size_   uint
+	values_ []V
+}
+
+func createIterator[V any](
+	array []V,
+) *iterator_[V] {
+	var iterator = &iterator_[V]{
+		size_:   uint(len(array)),
+		values_: array,
+	}
+	return iterator
+}
+
+func (v *iterator_[V]) IsEmpty() bool {
+	return v.size_ == 0
+}
+
+func (v *iterator_[V]) ToStart() {
+	v.slot_ = 0
+}
+
+func (v *iterator_[V]) ToEnd() {
+	v.slot_ = v.size_
+}
+
+func (v *iterator_[V]) HasPrevious() bool {
+	return v.slot_ > 0
+}
+
+func (v *iterator_[V]) GetPrevious() V {
+	var result_ V
+	if v.slot_ > 0 {
+		result_ = v.values_[v.slot_-1] // convert to ZERO based indexing
+		v.slot_ = v.slot_ - 1
+	}
+	return result_
+}
+
+func (v *iterator_[V]) HasNext() bool {
+	return v.slot_ < v.size_
+}
+
+func (v *iterator_[V]) GetNext() V {
+	var result_ V
+	if v.slot_ < v.size_ {
+		v.slot_ = v.slot_ + 1
+		result_ = v.values_[v.slot_-1] // convert to ZERO based indexing
+	}
+	return result_
+}
+
+func (v *iterator_[V]) GetSize() uint {
+	return v.size_
+}
+
+func (v *iterator_[V]) GetSlot() uint {
+	return v.slot_
+}
+
+func (v *iterator_[V]) SetSlot(
+	slot uint,
+) {
+	if slot > v.size_ {
+		slot = v.size_
+	}
+	v.slot_ = slot
+}
+
+// Arrays
+
 func arraySize[V any](
 	array []V,
 ) uint {
@@ -111,6 +188,8 @@ func combineArrays[V any](
 ) []V {
 	return append(first, second...)
 }
+
+// Maps
 
 func mapSize[K comparable, V any](
 	map_ map[K]V,
