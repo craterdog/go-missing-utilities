@@ -320,6 +320,36 @@ func TestPointers(t *tes.T) {
 	fmt.Println()
 }
 
+var (
+	invalid uti.State
+	state1  uti.State = "$State1"
+	state2  uti.State = "$State2"
+	state3  uti.State = "$State3"
+)
+
+var (
+	initialized uti.Event = "$Initialized"
+	processed   uti.Event = "$Processed"
+	finalized   uti.Event = "$Finalized"
+)
+
+func TestController(t *tes.T) {
+	var events = []uti.Event{initialized, processed, finalized}
+	var transitions = map[uti.State]uti.Transitions{
+		state1: uti.Transitions{state2, invalid, invalid},
+		state2: uti.Transitions{invalid, state2, state3},
+		state3: uti.Transitions{invalid, invalid, invalid},
+	}
+
+	var controller = uti.Controller(events, transitions, state1)
+	ass.Equal(t, state1, controller.GetState())
+	ass.Equal(t, state2, controller.ProcessEvent(initialized))
+	ass.Equal(t, state2, controller.ProcessEvent(processed))
+	ass.Equal(t, state3, controller.ProcessEvent(finalized))
+	controller.SetState(state1)
+	ass.Equal(t, state1, controller.GetState())
+}
+
 const template = `
 	<mixedName>
 	<mixedName_>

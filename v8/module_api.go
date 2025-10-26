@@ -16,7 +16,8 @@ functions fill is some gaps in the Go language and native libraries.  They make
 it easy to perform the things that should be simple in Go but aren't for various
 reasons.  The functions cover the following areas:
   - File System
-  - Composites (arrays, slices and maps)
+  - Sequences (arrays, slices and maps)
+  - Controllers (finite state machines)
   - Strings
   - Codex
   - Random
@@ -45,9 +46,44 @@ type IteratorLike[V any] interface {
 	)
 }
 
+/*
+Event is a constrained type representing an event type in a state machine.
+Using a string type for an event makes it easier to print out in a human
+readable way.
+*/
+type Event string
+
+/*
+State is a constrained type representing a state in a state machine.  Using a
+string type for a state makes it easier to print out in a human readable way.
+*/
+type State string
+
+/*
+Transitions is a constrained type representing a row of states in a state machine.
+*/
+type Transitions []State
+
+/*
+ControllerLike is an instance interface that declares the complete set of
+principal, attribute and aspect methods that must be supported by each
+instance of a concrete controller-like class.
+*/
+type ControllerLike interface {
+	ProcessEvent(
+		event Event,
+	) State
+	GetState() State
+	SetState(
+		state State,
+	)
+	GetEvents() []Event
+	GetTransitions() map[State]Transitions
+}
+
 // GLOBAL FUNCTIONS
 
-// Composites
+// Sequences
 
 /*
 Relative indexing allows an index to be a relative positive (or negative)
@@ -194,6 +230,20 @@ func CombineMaps[K comparable, V any](
 	return combineMaps(first, second)
 }
 
+// Controllers
+
+/*
+Controller returns a state machine that can be used to control an automaton.
+*/
+func Controller(
+	events []Event,
+	transitions map[State]Transitions,
+	initialState State,
+) ControllerLike {
+	return createController(events, transitions, initialState)
+}
+
+/*
 // Strings
 
 /*
