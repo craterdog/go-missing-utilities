@@ -68,6 +68,26 @@ type Transitions []State
 ControllerLike is an instance interface that declares the complete set of
 principal, attribute and aspect methods that must be supported by each
 instance of a concrete controller-like class.
+
+A controller-like class implements a finite state machine with possible event
+types. It enforces the possible states of the state machine and allowed
+transitions between states given a finite set of possible event types. It
+implements a finite state machine with the following table structure:
+
+	        -----------------------------------
+	events: | [event1,  event2,  ... eventM ] |
+	        -----------------------------------
+	state1: | [invalid, state2,  ... invalid] |
+	state2: | [state3,  stateN,  ... invalid] |
+	        |                ...              |
+	stateN: | [state1,  invalid, ... state3 ] |
+	        -----------------------------------
+
+The first row of the state machine defines the possible events that can occur.
+Each subsequent row defines a state and the possible transitions from that
+state to the next state for each possible event. Transitions marked as "invalid"
+cannot occur. The state machine always starts in the first state of the finite
+state machine (e.g. state1).
 */
 type ControllerLike interface {
 	ProcessEvent(
